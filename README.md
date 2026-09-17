@@ -1,2 +1,2 @@
-# ai-incident-response-platform
+# AI Incident Response Platform
 
