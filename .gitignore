@@ -182,4 +182,4 @@ cython_debug/
 
 
 # MACOSX
-.DS_Store
+echo .DS_Store >> .gitignore
