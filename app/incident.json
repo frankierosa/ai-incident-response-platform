@@ -1,0 +1,9 @@
+{
+  "id": 1001,
+  "title": "Payment service returning HTTP 500",
+  "severity": "HIGH",
+  "status": "OPEN",
+  "service": "payment-service",
+  "description": "Customers are receiving HTTP 500 responses",
+  "created_at": "2026-09-16T20:00:00"
+}

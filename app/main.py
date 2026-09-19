@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 
+from app.api.routes.incidents import router as incident_router
+
 
 # Create a FastAPI application instance with a title and version.
 app = FastAPI(
@@ -13,3 +15,7 @@ def health_check():
     return {
         "status": "ok"
     }
+
+
+# Import the incident router from the incidents module and include it in the FastAPI application instance. This allows the application to handle requests related to incidents using the defined endpoints in the incident router.
+app.include_router(incident_router)
