@@ -21,7 +21,7 @@ engine = create_engine(
 # Define a base class for declarative class definitions using SQLAlchemy's DeclarativeBase. This base class will be used to define the database models (tables) in the application.
 SessionLocal = sessionmaker(
     bind=engine,
-    autoFlush=False,
+    autoflush=False,
     autocommit=False,
 )
 
