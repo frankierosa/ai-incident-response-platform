@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 
-
+# Define the Incident model, which represents the "incidents" table in the database. This model includes various attributes such as id, title, severity, status, service, description, and created_at, each mapped to corresponding database columns with appropriate data types and constraints.
 class Incident(Base):
     __tablename__ = "incidents"
 
