@@ -3,11 +3,8 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 
-client = TestClient(app)
-
-
 # Test cases for the /incidents endpoint
-def test_create_incident():
+def test_create_incident(client):
     response = client.post(
         "/incidents",
         json={
@@ -35,7 +32,7 @@ def test_create_incident():
 
 
 # Test cases for the /incidents/{id} endpoint
-def test_get_incidents():
+def test_get_incidents(client):
     response = client.get("/incidents")
 
     assert response.status_code == 200
@@ -46,7 +43,7 @@ def test_get_incidents():
 
 
 # Test cases for getting an incident by ID
-def test_get_incident_by_id():
+def test_get_incident_by_id(client):
     create_response = client.post(
         "/incidents",
         json={
@@ -73,7 +70,7 @@ def test_get_incident_by_id():
 
 
 # Test cases for getting a nonexistent incident
-def test_get_nonexistent_incident():
+def test_get_nonexistent_incident(client):
     response = client.get("/incidents/999999")
 
     assert response.status_code == 404
