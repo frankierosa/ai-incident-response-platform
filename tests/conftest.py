@@ -39,7 +39,8 @@ def setup_test_database():
     yield
 
     # Drop the test database tables after the tests are done
-    #Base.metadata.drop_all(bind=test_engine)
+    Base.metadata.drop_all(bind=test_engine)
+
 
 # Override the get_db dependency to use the test database session
 @pytest.fixture
