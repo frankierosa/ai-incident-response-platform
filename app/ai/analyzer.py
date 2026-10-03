@@ -3,7 +3,7 @@ import os
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
-# NOTE: Instead of trusting the LLM to return correctly formatted JSON, we're asking it to produce structured data that matches our Pydantic model.
+
 class IncidentAnalysis(BaseModel):
     """Structured AI analysis of a production incident."""
 
@@ -22,7 +22,6 @@ class IncidentAnalysis(BaseModel):
     recommended_actions: list[str] = Field(
         description="Recommended actions for investigating or resolving the incident."
     )
-
 
 
 def create_ai_analyzer():
@@ -65,4 +64,5 @@ Do not claim certainty when the available information is insufficient.
 Clearly distinguish probable causes from confirmed facts.
 """
 
-    return analyzer.invoke(prompt)
+    result = analyzer.invoke(prompt)
+    return IncidentAnalysis.model_validate(result)
