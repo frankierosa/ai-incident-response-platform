@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 BASE_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(BASE_DIR / ".env", override=True)
 
-
+# Define a Pydantic model for structured incident analysis
 class IncidentAnalysis(BaseModel):
     """Structured AI analysis of a production incident."""
 
@@ -30,7 +30,7 @@ class IncidentAnalysis(BaseModel):
         description="Recommended actions for investigating or resolving the incident."
     )
 
-
+# Define a function to create the AI analyzer with structured output
 def create_ai_analyzer():
     """Create the LLM configured for incident analysis."""
 
@@ -47,10 +47,11 @@ def create_ai_analyzer():
 
     return llm.with_structured_output(IncidentAnalysis)
 
-
+# Define a function to analyze an incident using the AI analyzer
 def analyze_incident(incident: dict) -> IncidentAnalysis:
     """Analyze an incident using the configured LLM."""
 
+    # Create the AI analyzer
     analyzer = create_ai_analyzer()
 
     prompt = f"""
@@ -71,5 +72,6 @@ Do not claim certainty when the available information is insufficient.
 Clearly distinguish probable causes from confirmed facts.
 """
 
+    # Invoke the analyzer with the prompt and return the structured result
     result = analyzer.invoke(prompt)
     return IncidentAnalysis.model_validate(result)
