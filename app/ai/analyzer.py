@@ -1,7 +1,14 @@
 import os
+from pathlib import Path
 
+from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
+
+
+# Load the project's .env file explicitly
+BASE_DIR = Path(__file__).resolve().parents[2]
+load_dotenv(BASE_DIR / ".env", override=True)
 
 
 class IncidentAnalysis(BaseModel):
@@ -35,10 +42,10 @@ def create_ai_analyzer():
     llm = ChatOpenAI(
         model="gpt-4o-mini",
         temperature=0,
+        api_key=api_key,
     )
 
     return llm.with_structured_output(IncidentAnalysis)
-
 
 
 def analyze_incident(incident: dict) -> IncidentAnalysis:
