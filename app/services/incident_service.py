@@ -4,8 +4,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.incident import Incident as IncidentModel
-from app.schemas.incident import Incident as IncidentSchema
 from app.schemas.incident import IncidentCreate
+
+from app.ai.analyzer import analyze_incident
+from app.ai.analyzer import IncidentAnalysis
 
 # Define the IncidentService class, which provides methods for creating and retrieving incidents from the database. This service class encapsulates the business logic related to incidents and interacts with the database using SQLAlchemy sessions.  
 class IncidentService:
@@ -58,6 +60,31 @@ class IncidentService:
         result = db.execute(statement)
 
         return result.scalar_one_or_none()
+
+
+    # Define the analyze_incident method, which analyzes a specific incident using the AI analyzer. It takes a SQLAlchemy session and an incident ID as input, retrieves the incident from the database, constructs a dictionary with the incident's data, and invokes the analyze_incident function from the AI analyzer module to perform the analysis. The method returns an IncidentAnalysis instance containing the analysis results.
+    def analyze_incident(
+        self,
+        db: Session,
+        incident_id: int,
+    ) -> IncidentAnalysis:
+        incident = self.get_incident(db, incident_id)
+
+        if incident is None:
+            raise ValueError("Incident not found")
+
+        incident_data = {
+            "id": incident.id,
+            "title": incident.title,
+            "severity": incident.severity,
+            "status": incident.status,
+            "service": incident.service,
+            "description": incident.description,
+            "created_at": incident.created_at.isoformat(),
+        }
+
+        return analyze_incident(incident_data)
+    
 
 # Define an instance of the IncidentService class, which can be used throughout the application to manage incidents. This instance provides access to the methods for creating and retrieving incidents from the database.
 incident_service = IncidentService()

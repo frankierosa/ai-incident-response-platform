@@ -5,6 +5,10 @@ from app.core.database import get_db
 from app.schemas.incident import Incident, IncidentCreate
 from app.services.incident_service import incident_service
 
+# Import the IncidentAnalysis class from the app.ai.analyzer module. This class is used for analyzing incidents and providing insights based on the incident data.
+from app.ai.analyzer import IncidentAnalysis
+
+
 # Router for incident-related endpoints
 router = APIRouter(
     prefix="/incidents",
@@ -57,3 +61,24 @@ def get_incident(
         )
 
     return incident
+
+
+# Endpoint to analyze an incident using AI
+@router.post(
+    "/{incident_id}/analyze",
+    response_model=IncidentAnalysis,
+)
+def analyze_incident(
+    incident_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return incident_service.analyze_incident(
+            db,
+            incident_id,
+        )
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Incident not found",
+        )
