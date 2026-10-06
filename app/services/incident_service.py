@@ -9,6 +9,16 @@ from app.schemas.incident import IncidentCreate
 from app.ai.analyzer import analyze_incident
 from app.ai.analyzer import IncidentAnalysis
 
+import json
+
+from app.ai.analyzer import IncidentAnalysis
+from app.ai.analyzer import analyze_incident as run_ai_analysis
+
+from app.models.incident_analysis import (
+    IncidentAnalysis as IncidentAnalysisModel,
+)
+
+
 # Define the IncidentService class, which provides methods for creating and retrieving incidents from the database. This service class encapsulates the business logic related to incidents and interacts with the database using SQLAlchemy sessions.  
 class IncidentService:
 
@@ -46,7 +56,9 @@ class IncidentService:
 
         return list(result.scalars().all())
 
-    # Define the get_incident method, which retrieves a specific incident from the database based on its ID. It takes a SQLAlchemy session and an incident ID as input, executes a SELECT statement to fetch the incident with the specified ID, and returns the corresponding IncidentModel instance or None if not found.
+    # Define the get_incident method, which retrieves a specific incident from the database based on its ID. 
+    # It takes a SQLAlchemy session and an incident ID as input, executes a SELECT statement to fetch the incident 
+    # with the specified ID, and returns the corresponding IncidentModel instance or None if not found.
     def get_incident(
         self,
         db: Session,
@@ -62,7 +74,11 @@ class IncidentService:
         return result.scalar_one_or_none()
 
 
-    # Define the analyze_incident method, which analyzes a specific incident using the AI analyzer. It takes a SQLAlchemy session and an incident ID as input, retrieves the incident from the database, constructs a dictionary with the incident's data, and invokes the analyze_incident function from the AI analyzer module to perform the analysis. The method returns an IncidentAnalysis instance containing the analysis results.
+    # Define the analyze_incident method, which performs analysis on a specific incident. 
+    # It takes a SQLAlchemy session and an incident ID as input, retrieves the incident from the database, 
+    # constructs a dictionary of incident data, calls the analyze_incident function to perform the analysis, 
+    # creates an IncidentAnalysisModel instance with the analysis results, adds it to the session, 
+    # commits the transaction, and returns the created IncidentAnalysisModel instance.
     def analyze_incident(
         self,
         db: Session,
@@ -83,8 +99,26 @@ class IncidentService:
             "created_at": incident.created_at.isoformat(),
         }
 
-        return analyze_incident(incident_data)
+        analysis = run_ai_analysis(incident_data)
+
+        analysis_model = IncidentAnalysisModel(
+            incident_id=incident.id,
+            summary=analysis.summary,
+            probable_cause=analysis.probable_cause,
+            impact=analysis.impact,
+            recommended_actions=json.dumps(
+                analysis.recommended_actions
+            ),
+            created_at=datetime.now(timezone.utc),
+        )
+
+        db.add(analysis_model)
+        db.commit()
+        db.refresh(analysis_model)
+
+        return analysis
     
 
-# Define an instance of the IncidentService class, which can be used throughout the application to manage incidents. This instance provides access to the methods for creating and retrieving incidents from the database.
+# Define an instance of the IncidentService class, which can be used throughout the application to manage incidents. 
+# This instance provides access to the methods for creating and retrieving incidents from the database.
 incident_service = IncidentService()

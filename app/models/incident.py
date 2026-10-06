@@ -1,11 +1,19 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 
-# Define the Incident model, which represents the "incidents" table in the database. This model includes various attributes such as id, title, severity, status, service, description, and created_at, each mapped to corresponding database columns with appropriate data types and constraints.
+from typing import TYPE_CHECKING
+
+# Define the Incident model, which represents the "incidents" table in the database.
+if TYPE_CHECKING:
+    from app.models.incident_analysis import IncidentAnalysis
+
+
+# Define the Incident model, which represents the "incidents" table in the database. 
+# This model includes various attributes such as id, title, severity, status, service, description, and created_at, each mapped to corresponding database columns with appropriate data types and constraints.
 class Incident(Base):
     __tablename__ = "incidents"
 
@@ -44,3 +52,9 @@ class Incident(Base):
         DateTime,
         nullable=False,
     )
+    analysis: Mapped["IncidentAnalysis | None"] = relationship(
+        back_populates="incident",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+

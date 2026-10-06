@@ -22,8 +22,8 @@ def test_analyze_incident(client):
 
     # Patch the analyze_incident function to return the mock analysis
     with patch(
-        "app.services.incident_service.analyze_incident",
-        return_value=mock_analysis,
+        "app.services.incident_service.run_ai_analysis",
+        return_value=mock_analysis,\
     ):
         create_response = client.post(
             "/incidents",
