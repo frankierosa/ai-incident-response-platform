@@ -7,15 +7,13 @@ from app.models.incident import Incident as IncidentModel
 from app.schemas.incident import IncidentCreate
 
 from app.ai.analyzer import analyze_incident
-from app.ai.analyzer import IncidentAnalysis
+
 
 import json
 
-from app.ai.analyzer import IncidentAnalysis
-from app.ai.analyzer import analyze_incident as run_ai_analysis
-
-from app.models.incident_analysis import (
-    IncidentAnalysis as IncidentAnalysisModel,
+from app.ai.analyzer import (
+    IncidentAnalysis,
+    analyze_incident as run_ai_analysis,
 )
 
 
