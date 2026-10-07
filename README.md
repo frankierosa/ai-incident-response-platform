@@ -1,59 +1,41 @@
 # AI Production Incident Response Platform
 
-An AI-powered production incident response platform designed to help engineering and support teams collect, analyze, search, and respond to production incidents using **FastAPI, PostgreSQL, pgvector, RAG, LLMs, Docker, and Kubernetes-ready architecture**.
+An AI-assisted production incident response platform designed to help engineering and support teams investigate incidents, retrieve relevant historical information, and generate context-aware analysis and remediation recommendations.
 
-The project is being developed as a production-style software engineering portfolio project, with an emphasis on API development, database integration, automated testing, AI/RAG capabilities, containerization, CI/CD, and reproducible deployment.
+The project combines **Python, FastAPI, PostgreSQL, pgvector, RAG, LLMs, automated testing, Docker, CI/CD, and Kubernetes-ready architecture**.
 
----
-
-## 🚧 Project Status
-
-**Current development phase:** RAG / AI implementation
-
-The project is being developed incrementally:
-
-* [x] FastAPI application foundation
-* [x] Health-check endpoint
-* [x] PostgreSQL integration
-* [x] Incident data model
-* [x] Incident REST API
-* [x] Automated tests
-* [x] PostgreSQL + pgvector environment
-* [ ] Embedding generation
-* [ ] Vector similarity search
-* [ ] Retrieval-Augmented Generation (RAG)
-* [ ] AI-powered incident analysis
-* [ ] AI-generated remediation recommendations
-* [ ] Dockerized application
-* [ ] Docker Compose deployment
-* [ ] GitHub Actions CI/CD
-* [ ] GitHub Container Registry publishing
-* [ ] Versioned releases
-* [ ] Kubernetes deployment
-* [ ] Production cloud deployment
-
-> Features marked as incomplete are part of the planned development roadmap and may change as the project evolves.
+> **Portfolio Project:** This project demonstrates the transition from enterprise technical support and production troubleshooting into modern software engineering, backend development, AI/RAG, and cloud-native technologies.
 
 ---
 
-# 🎯 Project Goals
+## 🎯 Project Overview
 
-The goal is to build a production-style platform capable of assisting engineers during incident response.
+Production incidents often require engineers to search through previous incidents, troubleshooting documentation, logs, and operational knowledge before determining a possible root cause.
 
-The platform will eventually provide capabilities such as:
+This project explores how **Retrieval-Augmented Generation (RAG)** and Large Language Models (LLMs) can assist that process by combining structured incident data with semantically relevant historical information.
 
-1. Capture production incidents through REST APIs.
-2. Persist incident information in PostgreSQL.
-3. Generate embeddings from incident and operational knowledge.
-4. Store embeddings using PostgreSQL/pgvector.
-5. Retrieve semantically relevant historical incidents and documentation.
-6. Use Retrieval-Augmented Generation (RAG) to provide contextual information.
-7. Use an LLM to analyze incidents.
-8. Generate possible root causes and remediation recommendations.
-9. Provide an API for integration with other systems.
-10. Package the platform for reproducible deployment using Docker.
-11. Automate testing and container builds through CI/CD.
-12. Provide versioned releases suitable for deployment by other users or organizations.
+The platform is being developed to:
+
+* Capture and manage production incidents through REST APIs
+* Store incident data in PostgreSQL
+* Generate and store vector embeddings
+* Retrieve relevant historical incidents and technical knowledge
+* Use RAG to provide contextual information to an LLM
+* Assist with incident analysis and potential root-cause identification
+* Generate remediation recommendations
+* Provide a foundation for containerized and cloud-native deployment
+
+---
+
+## 💡 Why I Built This
+
+This project was created to combine my background in **enterprise technical support, production troubleshooting, and incident management** with modern software engineering and AI technologies.
+
+Rather than building a generic CRUD application, I wanted to create a project based on a real engineering problem:
+
+> **How can AI help engineers investigate and resolve production incidents faster by using historical operational knowledge?**
+
+The project provides an opportunity to apply software engineering practices to a problem closely related to real-world production support.
 
 ---
 
@@ -63,9 +45,8 @@ The target architecture is:
 
 ```text
                          ┌──────────────────────┐
-                         │      Client/User     │
-                         │                      │
-                         │ Browser / API Client │
+                         │      API Client      │
+                         │ Browser / Postman    │
                          └──────────┬───────────┘
                                     │
                                     │ REST API
@@ -74,40 +55,51 @@ The target architecture is:
                          │       FastAPI        │
                          │                      │
                          │ Incident Management  │
-                         │ AI/RAG API           │
+                         │ AI/RAG Services      │
                          └──────────┬───────────┘
                                     │
-                    ┌───────────────┼────────────────┐
-                    │               │                │
-                    ▼               ▼                ▼
-             ┌───────────┐   ┌─────────────┐  ┌──────────────┐
-             │PostgreSQL │   │   RAG       │  │     LLM      │
-             │           │   │   Pipeline  │  │              │
-             │ Incidents │   │             │  │ Analysis     │
-             │ Metadata  │   │ Retrieval   │  │ Reasoning    │
-             └─────┬─────┘   └──────┬──────┘  └──────┬───────┘
-                   │                 │                │
-                   │                 ▼                │
-                   │          ┌─────────────┐         │
-                   └─────────►│  pgvector   │◄────────┘
+                  ┌─────────────────┼─────────────────┐
+                  │                 │                 │
+                  ▼                 ▼                 ▼
+           ┌────────────┐    ┌─────────────┐   ┌─────────────┐
+           │ PostgreSQL │    │ RAG Pipeline│   │     LLM     │
+           │            │    │             │   │             │
+           │ Incidents  │    │ Retrieval   │   │ Analysis    │
+           │ Metadata   │    │ Embeddings  │   │ Reasoning   │
+           └─────┬──────┘    └──────┬──────┘   └──────┬──────┘
+                 │                   │                 │
+                 │                   ▼                 │
+                 │            ┌─────────────┐          │
+                 └───────────►│  pgvector   │◄─────────┘
                               │             │
-                              │ Embeddings  │
+                              │ Vector      │
                               │ Similarity  │
                               │ Search      │
                               └─────────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ AI Incident Analysis │
+                         │                      │
+                         │ Root Cause Assistance│
+                         │ Recommendations      │
+                         └──────────────────────┘
 ```
 
 ---
 
-# 🧠 RAG Architecture
+# 🧠 RAG Pipeline
 
-The planned RAG pipeline is:
+The planned Retrieval-Augmented Generation workflow is:
 
 ```text
 Incident / Documentation
           │
           ▼
-      Text Chunking
+     Text Processing
+          │
+          ▼
+       Chunking
           │
           ▼
       Embeddings
@@ -115,12 +107,11 @@ Incident / Documentation
           ▼
        pgvector
           │
-          │
           ▼
    Similarity Search
           │
           ▼
- Relevant Context
+  Relevant Context
           │
           ▼
         LLM
@@ -129,127 +120,159 @@ Incident / Documentation
  AI Incident Analysis
           │
           ▼
- Root Cause / Recommendations
+Recommendations
 ```
 
-The purpose of RAG is to provide the language model with relevant organizational and historical context rather than relying solely on the model's general knowledge.
+RAG allows the application to provide the LLM with relevant operational context instead of relying only on the model's general knowledge.
 
 ---
 
 # 🛠️ Technology Stack
 
-| Component               | Technology                     |
-| ----------------------- | ------------------------------ |
-| Language                | Python                         |
-| API Framework           | FastAPI                        |
-| API Style               | REST                           |
-| Database                | PostgreSQL                     |
-| Vector Database         | PostgreSQL + pgvector          |
-| ORM / Database Access   | SQLAlchemy                     |
-| Testing                 | pytest                         |
-| Containerization        | Docker                         |
-| Local Orchestration     | Docker Compose                 |
-| AI / LLM                | LLM provider integration       |
-| RAG                     | Retrieval-Augmented Generation |
-| Embeddings              | Embedding model                |
-| CI/CD                   | GitHub Actions                 |
-| Container Registry      | GitHub Container Registry      |
-| Version Control         | Git / GitHub                   |
-| Future Deployment       | Kubernetes                     |
-| Future Cloud Deployment | TBD                            |
+| Area                  | Technology                     |
+| --------------------- | ------------------------------ |
+| Programming Language  | Python                         |
+| Backend Framework     | FastAPI                        |
+| API                   | REST                           |
+| Database              | PostgreSQL                     |
+| Vector Search         | pgvector                       |
+| ORM / Database Access | SQLAlchemy                     |
+| Data Validation       | Pydantic                       |
+| Testing               | pytest                         |
+| AI / LLM              | LLM integration                |
+| RAG                   | Retrieval-Augmented Generation |
+| Containerization      | Docker                         |
+| Local Deployment      | Docker Compose                 |
+| CI/CD                 | GitHub Actions                 |
+| Container Registry    | GitHub Container Registry      |
+| Version Control       | Git / GitHub                   |
+| Future Deployment     | Kubernetes                     |
 
 ---
 
-# 📁 Project Structure
+# 📊 Project Status
 
-The project is organized to separate application code, tests, infrastructure, and deployment configuration.
+### 🟢 Implemented
+
+* FastAPI application foundation
+* REST API
+* Health-check endpoint
+* PostgreSQL database integration
+* SQLAlchemy database access
+* Incident data model
+* Incident persistence
+* API validation with Pydantic
+* Automated testing
+* PostgreSQL + pgvector development environment
+
+### 🟡 In Progress
+
+* Embedding generation
+* Vector similarity search
+* Document ingestion
+* RAG pipeline
+* Context retrieval
+* AI-assisted incident analysis
+
+### 🔵 Planned
+
+* AI-generated remediation recommendations
+* Dockerized application
+* Docker Compose deployment
+* GitHub Actions CI/CD
+* Automated Docker image builds
+* GitHub Container Registry
+* Semantic versioning
+* GitHub Releases
+* Kubernetes deployment
+* Application observability
+* Cloud deployment
+
+---
+
+# 🔌 API
+
+The application exposes REST APIs through FastAPI.
+
+Current/planned endpoints include:
 
 ```text
-ai-incident-response-platform/
-│
-├── app/
-│   ├── main.py
-│   ├── models.py
-│   ├── schemas.py
-│   ├── database.py
-│   ├── ...
-│   │
-│   └── rag/
-│       └── ...
-│
-├── tests/
-│   ├── test_health.py
-│   ├── test_incidents.py
-│   ├── test_database.py
-│   └── ...
-│
-├── migrations/
-│
-├── Dockerfile
-├── docker-compose.yml
-├── .dockerignore
-├── .gitignore
-├── .env.example
-├── requirements.txt
-├── pyproject.toml
-├── README.md
-│
-└── .github/
-    └── workflows/
-        ├── tests.yml
-        └── docker.yml
+GET    /health
+POST   /incidents
+GET    /incidents
+GET    /incidents/{id}
 ```
 
-> The project structure will evolve as additional RAG, AI, deployment, and infrastructure components are implemented.
+FastAPI automatically provides interactive API documentation.
+
+Once the application is running:
+
+```text
+http://localhost:8000/docs
+```
+
+The API documentation will allow developers to test endpoints directly through the browser.
 
 ---
 
-# 🚀 Running the Project Locally
+# 🗄️ Database
 
-## Prerequisites
+The application uses **PostgreSQL** for persistent application data.
 
-The development environment requires:
+The vector-search capability uses **pgvector** to support embedding storage and similarity search for the RAG pipeline.
 
-* Python 3.x
-* PostgreSQL
-* Docker
-* Docker Compose
-* Git
+Target data flow:
 
-Additional requirements may be introduced as the AI/RAG functionality develops.
+```text
+Incident
+   │
+   ▼
+PostgreSQL
+   │
+   ├── Incident Metadata
+   │
+   └── Vector Embeddings
+            │
+            ▼
+         pgvector
+            │
+            ▼
+     Similarity Search
+```
 
 ---
 
-## Environment Configuration
+# 🧪 Testing
 
-Sensitive configuration should not be committed to GitHub.
+Testing is an important part of the project development process.
 
-Create a local environment file:
+The test suite includes unit and integration testing for application functionality.
+
+Example:
 
 ```bash
-cp .env.example .env
+pytest
 ```
 
-The `.env` file should contain environment-specific configuration such as:
+Planned testing coverage includes:
 
-```text
-DATABASE_URL=...
-OPENAI_API_KEY=...
-LLM_MODEL=...
-EMBEDDING_MODEL=...
-```
+* API endpoints
+* Database operations
+* Incident creation and retrieval
+* RAG retrieval
+* Embedding generation
+* AI service integration
+* Integration testing
 
-The actual `.env` file should remain excluded through `.gitignore`.
-
-The repository will provide `.env.example` as a safe configuration template.
+The goal is to ensure new AI/RAG functionality does not break existing application functionality.
 
 ---
 
-# 🐳 Docker Deployment
+# 🐳 Docker & Deployment
 
-Docker will be used to provide a reproducible application environment.
+Docker will be used to provide a reproducible deployment environment.
 
-The target deployment architecture is:
+The target local architecture is:
 
 ```text
 Docker Compose
@@ -259,54 +282,60 @@ Docker Compose
       └── PostgreSQL + pgvector
 ```
 
-Once Dockerization is complete, the application should be startable with:
+The intended developer experience will eventually be:
 
 ```bash
+git clone https://github.com/frankierosa/ai-incident-response-platform.git
+
+cd ai-incident-response-platform
+
+cp .env.example .env
+
 docker compose up -d
 ```
 
-The application will expose the FastAPI service and connect to the PostgreSQL/pgvector database.
+The Docker deployment configuration will be finalized as the core RAG and AI functionality is completed.
 
 ---
 
 # 📦 Container Distribution
 
-The Docker image will eventually be published to **GitHub Container Registry (GHCR)**.
+After Dockerization is complete, container images will be published through **GitHub Container Registry (GHCR)**.
 
 The intended distribution model is:
 
 ```text
 GitHub Repository
-        │
-        ▼
+       │
+       ▼
 GitHub Actions
-        │
-        ├── Run Tests
-        │
-        └── Build Docker Image
-                 │
-                 ▼
+       │
+       ├── Run Tests
+       │
+       └── Build Docker Image
+                    │
+                    ▼
         GitHub Container Registry
-                 │
-                 ▼
-     Versioned Docker Image
+                    │
+                    ▼
+          Versioned Docker Image
 ```
 
-Example:
+Example target usage:
 
 ```bash
-docker pull ghcr.io/xxxxxxxx/ai-incident-response-platform:0.1.0
+docker pull ghcr.io/frankierosa/ai-incident-response-platform:0.1.0
 ```
 
-Versioned images will allow users to deploy a known version of the application rather than depending exclusively on a mutable `latest` tag.
+Versioned images will allow users to deploy a specific release rather than relying exclusively on a mutable `latest` tag.
 
 ---
 
 # 🔄 CI/CD
 
-GitHub Actions will eventually automate the project's validation and deployment workflow.
+GitHub Actions will eventually automate testing and container builds.
 
-The planned pipeline is:
+Target workflow:
 
 ```text
 Developer
@@ -320,39 +349,37 @@ Pull Request
     ▼
 Automated Tests
     │
-    ├── Fail → Fix
+    ├── Failed → Fix
     │
-    └── Pass
+    └── Passed
           │
           ▼
-       Merge
+        Merge
           │
           ▼
          main
           │
           ▼
-    Build Docker Image
+    Docker Build
           │
           ▼
  GitHub Container Registry
 ```
 
-Planned CI/CD capabilities include:
+Planned CI/CD capabilities:
 
-* Python dependency installation
-* Unit tests
+* Automated unit tests
 * Integration tests
 * API tests
-* Database tests
-* Docker image build
+* Docker image builds
 * Container validation
-* Versioned container publishing
+* Versioned image publishing
 
 ---
 
-# 🌿 Git Branching Strategy
+# 🌿 Git Workflow
 
-Development will use feature branches rather than making all changes directly on `main`.
+Development follows a feature-branch workflow.
 
 Example:
 
@@ -375,25 +402,9 @@ git pull
 git checkout -b feature/rag
 ```
 
-After development and testing:
+After development and testing, the feature is merged through a pull request.
 
-```text
-Feature Branch
-      │
-      ▼
-Pull Request
-      │
-      ▼
-Automated Tests
-      │
-      ▼
-Code Review / Validation
-      │
-      ▼
-main
-```
-
-This workflow is intended to demonstrate professional software-development practices while keeping the project manageable as a portfolio project.
+This approach keeps the main branch stable and demonstrates a professional development workflow.
 
 ---
 
@@ -416,7 +427,7 @@ v1.0.0
 
 ### PATCH
 
-Bug fixes or small corrections:
+Bug fixes:
 
 ```text
 v0.2.1
@@ -432,207 +443,67 @@ v0.3.0
 
 ### MAJOR
 
-Major functionality or breaking API changes:
+Major or breaking changes:
 
 ```text
 v1.0.0
 ```
 
-Git tags will identify specific versions of the source code.
+Git tags will identify specific source-code versions, while GitHub Releases will document significant project milestones.
 
-Docker images will use corresponding version tags.
-
-Example:
-
-```text
-Git Tag:
-v0.3.0
-
-Docker Image:
-ghcr.io/frankierosa/ai-incident-response-platform:0.3.0
-```
-
----
-
-# 🏁 Releases
-
-GitHub Releases will be used to document stable project versions.
-
-Each release may include:
-
-* Release version
-* New features
-* Bug fixes
-* API changes
-* Database changes
-* Deployment changes
-* Docker image version
-* Known issues
-
-Example:
+Docker images will eventually use matching version tags:
 
 ```text
 v0.3.0
-│
-├── RAG retrieval improvements
-├── New incident analysis endpoint
-├── Database updates
-├── Automated integration tests
-└── Docker image published
+
+ghcr.io/xxxxxxxx/ai-incident-response-platform:0.3.0
 ```
 
 ---
 
-# 🧪 Testing Strategy
+# 🚀 Development Roadmap
 
-Testing will be implemented at multiple levels.
+### Phase 1 — Application Foundation
 
-### Unit Tests
-
-Test individual functions and components.
-
-```text
-tests/
-├── test_health.py
-├── test_incidents.py
-└── ...
-```
-
-### Integration Tests
-
-Validate interactions between:
-
-```text
-FastAPI
-   │
-   ▼
-Database
-```
-
-### RAG Tests
-
-Validate:
-
-```text
-Documents
-   ↓
-Chunking
-   ↓
-Embeddings
-   ↓
-Vector Search
-   ↓
-Retrieved Context
-```
-
-### API Tests
-
-Validate REST endpoints and expected responses.
-
-The objective is to prevent changes to the AI/RAG implementation from breaking existing application functionality.
-
----
-
-# 🔐 Security Considerations
-
-The project will follow basic secure-development practices.
-
-Sensitive information should never be committed to GitHub.
-
-Examples include:
-
-* API keys
-* Database passwords
-* Access tokens
-* Cloud credentials
-* Production secrets
-
-Local secrets should be stored through environment variables or an appropriate secrets-management system.
-
-Production deployment will eventually introduce a dedicated secrets-management strategy.
-
----
-
-# ☸️ Kubernetes Roadmap
-
-After the Dockerized application is stable, Kubernetes will be considered as the next deployment stage.
-
-Target architecture:
-
-```text
-              Kubernetes Cluster
-                     │
-        ┌────────────┴────────────┐
-        │                         │
-        ▼                         ▼
- FastAPI Deployment       PostgreSQL / Vector
-        │                         │
-        └────────────┬────────────┘
-                     │
-                     ▼
-                  Services
-                     │
-                     ▼
-                  Ingress
-```
-
-The Kubernetes implementation will focus on:
-
-* Deployments
-* Services
-* ConfigMaps
-* Secrets
-* Health probes
-* Resource configuration
-* Scaling
-* Rolling updates
-* Container image versioning
-
----
-
-# 📈 Development Roadmap
-
-## Phase 1 — Application Foundation
-
-* FastAPI application
+* FastAPI
 * REST API
-* Incident model
-* PostgreSQL integration
-* Automated tests
+* PostgreSQL
+* SQLAlchemy
+* Incident management
+* Automated testing
 
 **Status: Completed**
 
-## Phase 2 — RAG
+### Phase 2 — RAG
 
 * pgvector
 * Embeddings
 * Document ingestion
 * Chunking
 * Similarity search
-* Retrieval pipeline
+* Context retrieval
 
 **Status: In Progress**
 
-## Phase 3 — AI Incident Analysis
+### Phase 3 — AI Incident Analysis
 
 * LLM integration
-* Context-aware incident analysis
+* Context-aware analysis
 * Root-cause assistance
 * Remediation recommendations
 
 **Status: Planned**
 
-## Phase 4 — Containerization
+### Phase 4 — Containerization
 
 * Dockerfile
 * Docker Compose
 * Application container
-* PostgreSQL/pgvector container
-* Production configuration
+* Database/vector environment
 
 **Status: Planned**
 
-## Phase 5 — CI/CD
+### Phase 5 — CI/CD
 
 * GitHub Actions
 * Automated tests
@@ -641,7 +512,7 @@ The Kubernetes implementation will focus on:
 
 **Status: Planned**
 
-## Phase 6 — Releases
+### Phase 6 — Releases
 
 * Semantic versioning
 * Git tags
@@ -650,66 +521,89 @@ The Kubernetes implementation will focus on:
 
 **Status: Planned**
 
-## Phase 7 — Kubernetes
+### Phase 7 — Kubernetes
 
 * Kubernetes manifests
-* Health probes
-* Configuration management
+* Deployments
+* Services
+* ConfigMaps
 * Secrets
+* Health probes
 * Scaling
-* Rolling deployments
+* Rolling updates
 
 **Status: Planned**
 
 ---
 
-# 🎓 Portfolio Objectives
+# 🔮 Future Enhancements
 
-This project demonstrates practical experience across several areas of modern software engineering:
+Potential future capabilities include:
 
-* Python development
-* FastAPI
-* REST API design
-* PostgreSQL
-* Vector databases
-* SQLAlchemy
-* Automated testing
-* AI/LLM integration
-* Retrieval-Augmented Generation
-* Docker
-* CI/CD
-* GitHub Actions
-* Container registries
-* Semantic versioning
-* Git branching strategies
-* Kubernetes
-* Production-oriented application architecture
-
-The project is intentionally being developed incrementally to demonstrate not only application development, but also the engineering practices required to build, test, package, release, and deploy a software product.
+* Incident severity classification
+* Automated incident categorization
+* Historical incident recommendations
+* Integration with ticketing systems
+* Slack / Microsoft Teams integration
+* Observability and metrics
+* Prometheus / Grafana integration
+* Distributed tracing
+* Authentication and authorization
+* Role-based access control
+* Multi-tenant support
+* Automated remediation workflows
+* Cloud deployment
 
 ---
 
-# 🔮 Future Improvements
+# 🎓 Portfolio Objectives
 
-Potential future enhancements include:
+This project demonstrates practical application of:
 
-* Authentication and authorization
-* Role-based access control
-* Incident severity prediction
-* Automated incident classification
-* Observability and metrics
-* Prometheus/Grafana integration
-* Distributed tracing
-* Slack/Teams integration
-* Ticketing-system integration
-* Automated remediation workflows
-* Kubernetes deployment
-* Cloud deployment
-* Multi-tenant architecture
-* Web-based incident dashboard
+* Backend software development
+* Python
+* FastAPI
+* REST API design
+* PostgreSQL
+* Vector search
+* Retrieval-Augmented Generation
+* LLM integration
+* Automated testing
+* Docker
+* CI/CD
+* GitHub Actions
+* Containerized application deployment
+* Git branching and release management
+* Kubernetes architecture
+
+The project is intentionally being developed incrementally to demonstrate the complete software lifecycle:
+
+```text
+Requirements
+     ↓
+Application Development
+     ↓
+Database Integration
+     ↓
+Automated Testing
+     ↓
+AI / RAG
+     ↓
+Containerization
+     ↓
+CI/CD
+     ↓
+Versioned Releases
+     ↓
+Kubernetes
+     ↓
+Cloud Deployment
+```
 
 ---
 
 # 📄 License
 
-Add the project's selected open-source license here.
+This project is intended for educational and portfolio purposes.
+
+A formal open-source license will be added as the project approaches its first public release.
