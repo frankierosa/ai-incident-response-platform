@@ -295,7 +295,7 @@ GitHub Actions
 Example:
 
 ```bash
-docker pull ghcr.io/frankierosa/ai-incident-response-platform:0.1.0
+docker pull ghcr.io/xxxxxxxx/ai-incident-response-platform:0.1.0
 ```
 
 Versioned images will allow users to deploy a known version of the application rather than depending exclusively on a mutable `latest` tag.
