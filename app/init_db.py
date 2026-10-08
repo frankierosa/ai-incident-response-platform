@@ -2,6 +2,9 @@ from app.core.database import Base, engine
 from app.models.incident import Incident
 from app.models.incident_analysis import IncidentAnalysis
 
+# The __init__.py file in the app/models directory serves as a package initializer,
+from app.models.knowledge_document import KnowledgeDocument
+
 
 # Initialize the database by creating all tables defined in the SQLAlchemy models. This function uses the metadata from the Base class to create the necessary tables in the database, ensuring that the schema is set up correctly before the application starts.
 def init_db():
