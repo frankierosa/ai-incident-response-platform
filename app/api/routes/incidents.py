@@ -8,6 +8,10 @@ from app.services.incident_service import incident_service
 # Import the IncidentAnalysis class from the app.ai.analyzer module. This class is used for analyzing incidents and providing insights based on the incident data.
 from app.ai.analyzer import IncidentAnalysis
 
+# Import the knowledge_service from the app.services.knowledge_service module. This service is used for managing and retrieving knowledge related to incidents.
+from app.services.knowledge_service import knowledge_service
+
+
 
 # Router for incident-related endpoints
 router = APIRouter(
@@ -81,4 +85,20 @@ def analyze_incident(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Incident not found",
+        )
+
+
+# Endpoint to ingest knowledge documents (Markdown runbooks) into the database
+@router.post("/knowledge/ingest")
+def ingest_knowledge(db: Session = Depends(get_db)):
+    try:
+        inserted_count = knowledge_service.ingest_runbooks(db)
+        return {
+            "message": "Knowledge ingestion completed",
+            "chunks_ingested": inserted_count,
+        }
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
         )
