@@ -3,20 +3,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from sentence_transformers import SentenceTransformer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.knowledge_document import KnowledgeDocument
 
-
+# Define the project root and the directory where runbooks are stored. Also, specify the embedding model name to be used for generating embeddings of the runbook content.
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RUNBOOKS_DIR = PROJECT_ROOT / "data" / "runbooks"
+EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 
-# This service is responsible for ingesting knowledge documents, specifically Markdown runbooks, 
-# into the database. It reads the files from a specified directory, splits their content into manageable chunks, 
-# and stores each chunk as a separate entry in the `knowledge_documents` table. 
-# The service ensures that repeated ingestion of the same source file is idempotent by deleting any existing 
-# entries for that source before adding new ones.
+
+# Define the KnowledgeService class, which is responsible for managing and retrieving knowledge related to incidents. This service includes methods for ingesting runbooks, splitting their content into chunks, generating embeddings, and storing them in the database.
 class KnowledgeService:
     def __init__(self) -> None:
         self.text_splitter = RecursiveCharacterTextSplitter(
@@ -24,10 +23,11 @@ class KnowledgeService:
             chunk_overlap=120,
             separators=["\n## ", "\n### ", "\n\n", "\n", " ", ""],
         )
+        # Load the model once and reuse it.
+        self.embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
 
     def ingest_runbooks(self, db: Session) -> int:
-        """Load Markdown runbooks, split them, and store their chunks."""
-
+        """Load Markdown runbooks, split them, and store their embeddings."""
         if not RUNBOOKS_DIR.exists():
             raise FileNotFoundError(
                 f"Runbooks directory not found: {RUNBOOKS_DIR}"
@@ -44,11 +44,9 @@ class KnowledgeService:
         try:
             for file_path in files:
                 content = file_path.read_text(encoding="utf-8").strip()
-
                 if not content:
                     continue
 
-                # Make repeated ingestion idempotent for each source file.
                 existing = db.scalars(
                     select(KnowledgeDocument).where(
                         KnowledgeDocument.source == str(file_path)
@@ -60,6 +58,15 @@ class KnowledgeService:
 
                 chunks = self.text_splitter.split_text(content)
 
+                if not chunks:
+                    continue
+
+                embeddings = self.embedding_model.encode(
+                    chunks,
+                    normalize_embeddings=True,
+                    show_progress_bar=False,
+                )
+
                 for chunk_index, chunk in enumerate(chunks):
                     document = KnowledgeDocument(
                         title=file_path.stem.replace("-", " ").title(),
@@ -67,7 +74,7 @@ class KnowledgeService:
                         source=str(file_path),
                         document_type="runbook",
                         chunk_index=chunk_index,
-                        embedding=None,
+                        embedding=embeddings[chunk_index].tolist(),
                         created_at=datetime.now(timezone.utc).replace(
                             tzinfo=None
                         ),
