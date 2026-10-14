@@ -59,3 +59,14 @@ def client():
         yield test_client
 
     app.dependency_overrides.clear()
+
+
+# Define a fixture to provide a database session for tests
+@pytest.fixture
+def db_session():
+    db = TestingSessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()

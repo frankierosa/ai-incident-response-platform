@@ -16,6 +16,7 @@ EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 
 # Define the KnowledgeService class, which is responsible for managing and retrieving knowledge related to incidents. This service includes methods for ingesting runbooks, splitting their content into chunks, generating embeddings, and storing them in the database.
 class KnowledgeService:
+    # Initialize the KnowledgeService class, which sets up a text splitter for chunking runbook content and loads the embedding model for generating embeddings of the text chunks.
     def __init__(self) -> None:
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=800,
@@ -25,6 +26,8 @@ class KnowledgeService:
         # Load the model once and reuse it.
         self.embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
 
+    
+    # Define the ingest_runbooks method, which loads Markdown runbooks from the specified directory, splits their content into chunks, generates embeddings for each chunk, and stores them in the database. The method returns the number of inserted documents.
     def ingest_runbooks(self, db: Session) -> int:
         """Load Markdown runbooks, split them, and store their embeddings."""
         if not RUNBOOKS_DIR.exists():
@@ -87,6 +90,37 @@ class KnowledgeService:
         except Exception:
             db.rollback()
             raise
+
+
+
+    # Define the search_knowledge method, which takes a query string and searches for the most relevant knowledge chunks in the database based on their embeddings. The method returns a list of KnowledgeDocument instances that are most similar to the query. 
+    def search_knowledge(
+            self,
+            db: Session,
+            query: str,
+            limit: int = 3,
+            ) -> list[KnowledgeDocument]:
+        
+        """Find the most relevant knowledge chunks for a query."""
+        
+        query_embedding = self.embedding_model.encode(
+            query,
+            normalize_embeddings=True,
+            show_progress_bar=False,
+            ).tolist()
+        
+        distance = KnowledgeDocument.embedding.cosine_distance(
+            query_embedding
+            )
+        
+        statement = (
+            select(KnowledgeDocument)
+            .where(KnowledgeDocument.embedding.is_not(None))
+            .order_by(distance)
+            .limit(limit)
+            )
+        
+        return list(db.scalars(statement).all())
 
 
 knowledge_service = KnowledgeService()
