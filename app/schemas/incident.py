@@ -24,7 +24,7 @@ class IncidentCreate(BaseModel):
     service: str = Field(min_length=1, max_length=100)
     description: str = Field(min_length=1, max_length=2000)
 
-# 
+# Define the Incident Pydantic model, which extends the IncidentCreate model and adds additional fields for id and created_at. The model_config is set to allow attribute-based access to the model's fields.
 class Incident(IncidentCreate):
     id: int
     created_at: datetime
