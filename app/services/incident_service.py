@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timezone
 
 from sqlalchemy import select
@@ -7,9 +8,6 @@ from app.models.incident import Incident as IncidentModel
 from app.schemas.incident import IncidentCreate
 
 from app.ai.analyzer import analyze_incident
-
-
-import json
 
 from app.ai.analyzer import (
     IncidentAnalysis,
