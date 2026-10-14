@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.incident import Incident as IncidentModel
+from app.models.incident_analysis import IncidentAnalysis as IncidentAnalysisModel
 from app.schemas.incident import IncidentCreate
 
 from app.ai.analyzer import analyze_incident
