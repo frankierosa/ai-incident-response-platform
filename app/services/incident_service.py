@@ -8,12 +8,15 @@ from app.models.incident import Incident as IncidentModel
 from app.models.incident_analysis import IncidentAnalysis as IncidentAnalysisModel
 from app.schemas.incident import IncidentCreate
 
-from app.ai.analyzer import analyze_incident
-
+# Define the IncidentService class, which provides methods for creating and retrieving incidents from the database. This service class encapsulates the business logic related to incidents and interacts with the database using SQLAlchemy sessions.
 from app.ai.analyzer import (
     IncidentAnalysis,
     analyze_incident as run_ai_analysis,
 )
+
+# Import the knowledge_search_service instance from the knowledge_search_service module, which provides methods for searching the knowledge base for relevant documents based on a query. This service is used within the IncidentService class to perform knowledge searches related to incidents.
+from app.services.knowledge_search_service import knowledge_search_service
+
 
 
 # Define the IncidentService class, which provides methods for creating and retrieving incidents from the database. This service class encapsulates the business logic related to incidents and interacts with the database using SQLAlchemy sessions.  
@@ -96,7 +99,27 @@ class IncidentService:
             "created_at": incident.created_at.isoformat(),
         }
 
-        analysis = run_ai_analysis(incident_data)
+
+        knowledge_results = knowledge_search_service.search(
+             db=db,
+             query=f"{incident.title}\n{incident.description}",
+             top_k=3,
+             )
+        
+        knowledge_context = "\n\n".join(
+            (
+                  f"Source: {document.title}\n"
+                  f"Content:\n{document.content}"
+            )
+                  for document in knowledge_results
+         )
+        
+        analysis = run_ai_analysis(
+            incident_data,
+            knowledge_context=knowledge_context,
+        )
+
+
 
         analysis_model = IncidentAnalysisModel(
             incident_id=incident.id,
