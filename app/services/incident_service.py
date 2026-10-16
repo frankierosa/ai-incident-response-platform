@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+# Import the IncidentModel and IncidentAnalysisModel classes from the app.models.incident and app.models.incident_analysis modules, respectively. These classes represent the database models for incidents and incident analyses, and they are used within the IncidentService class to interact with the database.
 from app.models.incident import Incident as IncidentModel
 from app.models.incident_analysis import IncidentAnalysis as IncidentAnalysisModel
 from app.schemas.incident import IncidentCreate
@@ -16,6 +17,9 @@ from app.ai.analyzer import (
 
 # Import the knowledge_search_service instance from the knowledge_search_service module, which provides methods for searching the knowledge base for relevant documents based on a query. This service is used within the IncidentService class to perform knowledge searches related to incidents.
 from app.services.knowledge_search_service import knowledge_search_service
+
+# Define the IncidentService class, which provides methods for creating and retrieving incidents from the database. This service class encapsulates the business logic related to incidents and interacts with the database using SQLAlchemy sessions.
+from app.services.knowledge_service import knowledge_service
 
 
 
@@ -89,6 +93,9 @@ class IncidentService:
         if incident is None:
             raise ValueError("Incident not found")
 
+
+
+        # Construct a dictionary of incident data to be passed to the AI analysis function.
         incident_data = {
             "id": incident.id,
             "title": incident.title,
@@ -99,21 +106,21 @@ class IncidentService:
             "created_at": incident.created_at.isoformat(),
         }
 
+        knowledge_documents = knowledge_service.search_knowledge(
+            db=db,
+            query=(
+                f"{incident.title} "
+                f"{incident.service} "
+                f"{incident.description}"
+            ),
+            limit=3,
+        )
 
-        knowledge_results = knowledge_search_service.search(
-             db=db,
-             query=f"{incident.title}\n{incident.description}",
-             top_k=3,
-             )
-        
-        knowledge_context = "\n\n".join(
-            (
-                  f"Source: {document.title}\n"
-                  f"Content:\n{document.content}"
-            )
-                  for document in knowledge_results
-         )
-        
+        knowledge_context = [
+            document.content
+            for document in knowledge_documents
+        ]
+
         analysis = run_ai_analysis(
             incident_data,
             knowledge_context=knowledge_context,
