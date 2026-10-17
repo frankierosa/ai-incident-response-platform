@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from app.ai.analyzer import IncidentAnalysis
 
+
 # Test the analyze_incident endpoint
 def test_analyze_incident(client):
     mock_analysis = IncidentAnalysis(
@@ -69,4 +70,45 @@ def test_analyze_incident(client):
         "Check recent deployments.",
         "Verify database connectivity.",
     ]
-    
+
+
+
+# Test the analyze_incident endpoint when the AI service is unavailable
+def test_analyze_incident_ai_service_unavailable(client):
+    with patch(
+        "app.services.incident_service.run_ai_analysis",
+        side_effect=Exception("429: You have no credits remaining"),
+    ):
+        create_response = client.post(
+            "/incidents",
+            json={
+                "title": "Payment service HTTP 500 errors",
+                "severity": "HIGH",
+                "status": "OPEN",
+                "service": "payment-service",
+                "description": (
+                    "Customers are receiving HTTP 500 responses "
+                    "when attempting to make payments."
+                ),
+            },
+        )
+
+        assert create_response.status_code == 201
+
+        incident_id = create_response.json()["id"]
+
+        response = client.post(
+            f"/incidents/{incident_id}/analyze"
+        )
+
+    assert response.status_code == 503
+
+    data = response.json()
+
+    assert data["detail"]["code"] == "AI_SERVICE_UNAVAILABLE"
+
+    assert data["detail"]["message"] == (
+    "AI analysis is temporarily unavailable. "
+    "Please try again later. "
+    "Please contact your system administrator if the issue persists."
+)

@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timezone
 
+# Import the select function and Session class from the SQLAlchemy library, which are used for constructing SQL queries and managing database sessions, respectively.
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -20,6 +21,9 @@ from app.services.knowledge_search_service import knowledge_search_service
 
 # Define the IncidentService class, which provides methods for creating and retrieving incidents from the database. This service class encapsulates the business logic related to incidents and interacts with the database using SQLAlchemy sessions.
 from app.services.knowledge_service import knowledge_service
+
+# Import the AIServiceError exception class from the app.core.exceptions module, which is raised when the AI service cannot complete an analysis. This exception is used within the IncidentService class to handle errors related to AI analysis.
+from app.core.exceptions import AIServiceError
 
 
 
@@ -121,11 +125,11 @@ class IncidentService:
             for document in knowledge_documents
         ]
 
-        analysis = run_ai_analysis(
-            incident_data,
-            knowledge_context=knowledge_context,
-        )
-
+        # Construct a dictionary of incident data to be passed to the AI analysis function, including the knowledge context retrieved from the knowledge service.
+        try:
+            analysis = run_ai_analysis(incident_data)
+        except Exception as exc:
+            raise AIServiceError() from exc
 
 
         analysis_model = IncidentAnalysisModel(

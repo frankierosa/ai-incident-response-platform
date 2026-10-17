@@ -11,7 +11,8 @@ from app.ai.analyzer import IncidentAnalysis
 # Import the knowledge_service from the app.services.knowledge_service module. This service is used for managing and retrieving knowledge related to incidents.
 from app.services.knowledge_service import knowledge_service
 
-
+# Import the AIServiceError exception from the app.core.exceptions module. This exception is used to handle errors related to AI services in the application.
+from app.core.exceptions import AIServiceError
 
 # Router for incident-related endpoints
 router = APIRouter(
@@ -85,6 +86,16 @@ def analyze_incident(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Incident not found",
+        )
+
+    # Handle AIServiceError exceptions raised during the analysis process. If the AI service is unavailable or encounters an error, return a 503 Service Unavailable response with a relevant error message.
+    except AIServiceError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "code": "AI_SERVICE_UNAVAILABLE",
+                "message": "AI analysis is temporarily unavailable. Please try again later. Please contact your system administrator if the issue persists.",
+            },
         )
 
 
