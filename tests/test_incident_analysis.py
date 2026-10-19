@@ -1,5 +1,5 @@
 from unittest.mock import patch
-
+from app.models.knowledge_document import KnowledgeDocument
 from app.ai.analyzer import IncidentAnalysis
 
 
@@ -21,11 +21,11 @@ def test_analyze_incident(client):
         ],
     )
 
-    # Patch the analyze_incident function to return the mock analysis
+    # Patch the run_ai_analysis function to return the mock_analysis when called. This allows us to simulate the behavior of the AI analysis without actually invoking the AI service.
     with patch(
         "app.services.incident_service.run_ai_analysis",
-        return_value=mock_analysis,\
-    ):
+        return_value=mock_analysis,
+        ) as mock_run_ai_analysis:
         create_response = client.post(
             "/incidents",
             json={
@@ -79,7 +79,23 @@ def test_analyze_incident_ai_service_unavailable(client):
         "app.services.incident_service.run_ai_analysis",
         side_effect=Exception("429: You have no credits remaining"),
     ):
-        create_response = client.post(
+         
+        mock_knowledge = KnowledgeDocument(
+            title="Payment Service Runbook",
+            content=(
+                "For HTTP 500 errors, review application logs, "
+                "recent deployments, and database connectivity."
+            ),
+            source="payment-service.md",
+            document_type="runbook",
+            chunk_index=0,
+        )
+        
+        with patch(
+            "app.services.incident_service.knowledge_service.search_knowledge",
+            return_value=[mock_knowledge],
+        ):
+            create_response = client.post(
             "/incidents",
             json={
                 "title": "Payment service HTTP 500 errors",
@@ -112,3 +128,68 @@ def test_analyze_incident_ai_service_unavailable(client):
     "Please try again later. "
     "Please contact your system administrator if the issue persists."
 )
+
+
+    
+# Test that the knowledge context is passed to the AI analysis function
+def test_analyze_incident_passes_knowledge_to_ai(client):
+    mock_analysis = IncidentAnalysis(
+        summary="Payment service is returning HTTP 500 errors.",
+        probable_cause="Database connectivity may be contributing to the failure.",
+        impact="Customers may be unable to complete payment transactions.",
+        recommended_actions=[
+            "Review database connectivity.",
+            "Review payment service logs.",
+        ],
+    )
+
+    mock_knowledge = KnowledgeDocument(
+        title="Payment Service Runbook",
+        content=(
+            "For HTTP 500 errors, check database connectivity "
+            "and review recent deployments."
+        ),
+        source="payment-service.md",
+        document_type="runbook",
+        chunk_index=0,
+    )
+
+    with patch(
+        "app.services.incident_service.knowledge_service.search_knowledge",
+        return_value=[mock_knowledge],
+    ), patch(
+        "app.services.incident_service.run_ai_analysis",
+        return_value=mock_analysis,
+    ) as mock_run_ai_analysis:
+
+        create_response = client.post(
+            "/incidents",
+            json={
+                "title": "Payment service HTTP 500 errors",
+                "severity": "HIGH",
+                "status": "OPEN",
+                "service": "payment-service",
+                "description": (
+                    "Customers are receiving HTTP 500 responses "
+                    "when attempting to make payments."
+                ),
+            },
+        )
+
+        assert create_response.status_code == 201
+
+        incident_id = create_response.json()["id"]
+
+        response = client.post(
+            f"/incidents/{incident_id}/analyze"
+        )
+
+    assert response.status_code == 200
+
+    mock_run_ai_analysis.assert_called_once()
+
+    call_args = mock_run_ai_analysis.call_args
+
+    assert call_args.kwargs["knowledge_context"] == [
+        mock_knowledge.content
+    ]

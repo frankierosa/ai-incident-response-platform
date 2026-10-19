@@ -125,13 +125,17 @@ class IncidentService:
             for document in knowledge_documents
         ]
 
-        # Construct a dictionary of incident data to be passed to the AI analysis function, including the knowledge context retrieved from the knowledge service.
+        # Call the analyze_incident function to perform AI analysis on the incident data, passing in the knowledge context if available.
         try:
-            analysis = run_ai_analysis(incident_data)
+            analysis = run_ai_analysis(
+                incident_data,
+                knowledge_context=knowledge_context,
+                )
         except Exception as exc:
             raise AIServiceError() from exc
 
-
+        
+        # Create an instance of the IncidentAnalysisModel class to store the analysis results in the database.
         analysis_model = IncidentAnalysisModel(
             incident_id=incident.id,
             summary=analysis.summary,
