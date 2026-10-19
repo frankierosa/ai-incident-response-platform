@@ -2,17 +2,22 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.incident import Incident, IncidentCreate
 from app.services.incident_service import incident_service
 
-# Import the IncidentAnalysis class from the app.ai.analyzer module. This class is used for analyzing incidents and providing insights based on the incident data.
-from app.ai.analyzer import IncidentAnalysis
+from app.schemas.incident import (
+    Incident,
+    IncidentAnalysisResponse,
+    IncidentCreate,
+)
 
 # Import the knowledge_service from the app.services.knowledge_service module. This service is used for managing and retrieving knowledge related to incidents.
 from app.services.knowledge_service import knowledge_service
 
 # Import the AIServiceError exception from the app.core.exceptions module. This exception is used to handle errors related to AI services in the application.
 from app.core.exceptions import AIServiceError
+
+
+
 
 # Router for incident-related endpoints
 router = APIRouter(
@@ -68,11 +73,14 @@ def get_incident(
     return incident
 
 
-# Endpoint to analyze an incident using AI
+# Endpoint to analyze a specific incident using AI
 @router.post(
     "/{incident_id}/analyze",
-    response_model=IncidentAnalysis,
+    response_model=IncidentAnalysisResponse,
 )
+
+
+# The analyze_incident function is an endpoint that analyzes a specific incident using AI. It takes the incident ID as a path parameter and a database session as a dependency. The function calls the analyze_incident method from the incident_service to perform the analysis. If the incident is not found, it raises a 404 Not Found HTTP exception. If there is an error with the AI service, it raises a 503 Service Unavailable HTTP exception with a relevant error message.
 def analyze_incident(
     incident_id: int,
     db: Session = Depends(get_db),

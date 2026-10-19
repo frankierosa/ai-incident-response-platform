@@ -144,15 +144,16 @@ def test_analyze_incident_passes_knowledge_to_ai(client):
     )
 
     mock_knowledge = KnowledgeDocument(
-        title="Payment Service Runbook",
-        content=(
-            "For HTTP 500 errors, check database connectivity "
-            "and review recent deployments."
-        ),
-        source="payment-service.md",
-        document_type="runbook",
-        chunk_index=0,
-    )
+                id=1,
+                title="Payment Service Runbook",
+                content=(
+                    "For HTTP 500 errors, review application logs, "
+                    "recent deployments, and database connectivity."
+                ),
+                source="payment-service.md",
+                document_type="runbook",
+                chunk_index=0,
+            )
 
     with patch(
         "app.services.incident_service.knowledge_service.search_knowledge",

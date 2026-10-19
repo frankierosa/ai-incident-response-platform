@@ -24,6 +24,8 @@ class IncidentCreate(BaseModel):
     service: str = Field(min_length=1, max_length=100)
     description: str = Field(min_length=1, max_length=2000)
 
+
+
 # Define the Incident Pydantic model, which extends the IncidentCreate model and adds additional fields for id and created_at. The model_config is set to allow attribute-based access to the model's fields.
 class Incident(IncidentCreate):
     id: int
@@ -32,3 +34,27 @@ class Incident(IncidentCreate):
     model_config = {
         "from_attributes": True
     }
+
+# Define the KnowledgeSource Pydantic model, which represents a reference to knowledge used during incident analysis. It includes fields for id, title, source, document_type, and chunk_index, with attribute-based access enabled in the model_config.
+class KnowledgeSource(BaseModel):
+    """Reference to knowledge used during incident analysis."""
+
+    id: int
+    title: str
+    source: str
+    document_type: str
+    chunk_index: int
+
+    model_config = {
+        "from_attributes": True
+    }
+
+# Define the IncidentAnalysisResponse Pydantic model, which represents the response of an AI incident analysis. It includes fields for summary, probable_cause, impact, recommended_actions, and knowledge_sources, which is a list of KnowledgeSource objects.
+class IncidentAnalysisResponse(BaseModel):
+    """AI incident analysis together with the knowledge used to produce it."""
+
+    summary: str
+    probable_cause: str
+    impact: str
+    recommended_actions: list[str]
+    knowledge_sources: list[KnowledgeSource]

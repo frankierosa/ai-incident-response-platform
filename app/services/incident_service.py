@@ -8,7 +8,14 @@ from sqlalchemy.orm import Session
 # Import the IncidentModel and IncidentAnalysisModel classes from the app.models.incident and app.models.incident_analysis modules, respectively. These classes represent the database models for incidents and incident analyses, and they are used within the IncidentService class to interact with the database.
 from app.models.incident import Incident as IncidentModel
 from app.models.incident_analysis import IncidentAnalysis as IncidentAnalysisModel
-from app.schemas.incident import IncidentCreate
+
+
+# Import the IncidentAnalysisResponse, IncidentCreate, and KnowledgeSource Pydantic models from the app.schemas.incident module. These models are used for data validation and serialization when creating incidents and analyzing incident data.
+from app.schemas.incident import (
+    IncidentAnalysisResponse,
+    IncidentCreate,
+    KnowledgeSource,
+)
 
 # Define the IncidentService class, which provides methods for creating and retrieving incidents from the database. This service class encapsulates the business logic related to incidents and interacts with the database using SQLAlchemy sessions.
 from app.ai.analyzer import (
@@ -91,12 +98,11 @@ class IncidentService:
         self,
         db: Session,
         incident_id: int,
-    ) -> IncidentAnalysis:
+    ) -> IncidentAnalysisResponse:    
         incident = self.get_incident(db, incident_id)
 
         if incident is None:
             raise ValueError("Incident not found")
-
 
 
         # Construct a dictionary of incident data to be passed to the AI analysis function.
@@ -110,27 +116,40 @@ class IncidentService:
             "created_at": incident.created_at.isoformat(),
         }
 
-        knowledge_documents = knowledge_service.search_knowledge(
-            db=db,
-            query=(
-                f"{incident.title} "
-                f"{incident.service} "
-                f"{incident.description}"
-            ),
+
+        # Perform a knowledge search based on the incident description to retrieve relevant knowledge documents.
+        knowledge_context_documents = knowledge_service.search_knowledge(
+            db,
+            incident_data["description"],
             limit=3,
         )
 
         knowledge_context = [
             document.content
-            for document in knowledge_documents
+            for document in knowledge_context_documents
         ]
+
 
         # Call the analyze_incident function to perform AI analysis on the incident data, passing in the knowledge context if available.
         try:
             analysis = run_ai_analysis(
                 incident_data,
                 knowledge_context=knowledge_context,
+            )
+
+            # Create a list of KnowledgeSource instances based on the knowledge documents used in the analysis. Each KnowledgeSource instance contains information about the document, such as its ID, title, source, document type, and chunk index.
+            knowledge_sources = [
+                KnowledgeSource(
+                    id=document.id,
+                    title=document.title,
+                    source=document.source,
+                    document_type=document.document_type,
+                    chunk_index=document.chunk_index,
                 )
+                for document in knowledge_context_documents
+            ]
+            
+        # Handle any exceptions that occur during the AI analysis process. If an exception is raised, print the error message and raise an AIServiceError to indicate that the AI service could not complete the analysis.
         except Exception as exc:
             raise AIServiceError() from exc
 
@@ -151,7 +170,13 @@ class IncidentService:
         db.commit()
         db.refresh(analysis_model)
 
-        return analysis
+        return IncidentAnalysisResponse(
+            summary=analysis.summary,
+            probable_cause=analysis.probable_cause,
+            impact=analysis.impact,
+            recommended_actions=analysis.recommended_actions,
+            knowledge_sources=knowledge_sources,
+            )
     
 
 # Define an instance of the IncidentService class, which can be used throughout the application to manage incidents. 

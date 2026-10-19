@@ -54,43 +54,39 @@ def create_ai_analyzer():
 def analyze_incident(
     incident: dict,
     knowledge_context: list[str] | None = None,
-) -> IncidentAnalysis:
-    """Analyze an incident using the configured LLM and runbook knowledge."""
+    ) -> IncidentAnalysis:
 
     analyzer = create_ai_analyzer()
 
+    knowledge_section = ""
+    
     if knowledge_context:
-        knowledge_text = "\n\n".join(
-            f"Knowledge Chunk {index + 1}:\n{chunk}"
-            for index, chunk in enumerate(knowledge_context)
-        )
-    else:
-        knowledge_text = "No relevant runbook knowledge was found."
+        knowledge_section = """
+        Relevant knowledge retrieved from the incident knowledge base:
+        
+        """ + "\n\n---\n\n".join(knowledge_context)
 
-    prompt = f"""
-You are a production incident response assistant.
+        prompt = f"""
+        You are a production incident response assistant.
 
-Analyze the following production incident.
+        Analyze the following production incident.
 
-Incident:
-{incident}
+        Incident:
+        {incident}
 
-Relevant operational knowledge from internal runbooks:
-{knowledge_text}
+        {knowledge_section}
 
-Use the provided runbook knowledge when it is relevant.
+        Provide:
+        1. A concise summary.
+        2. The most probable cause based only on the available information.
+        3. The likely impact.
+        4. Recommended investigation or remediation actions.
 
-Provide:
-1. A concise summary.
-2. The most probable cause based only on the available information.
-3. The likely impact.
-4. Recommended investigation or remediation actions.
-
-Do not claim certainty when the available information is insufficient.
-Clearly distinguish probable causes from confirmed facts.
-Do not invent information that is not present in the incident or
-provided runbook knowledge.
-"""
+        Use the retrieved knowledge as supporting evidence when relevant.
+        Do not assume that retrieved knowledge is necessarily applicable to the incident.
+        Do not claim certainty when the available information is insufficient.
+        Clearly distinguish probable causes from confirmed facts.
+        """
 
     result = analyzer.invoke(prompt)
 
