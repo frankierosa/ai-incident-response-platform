@@ -44,6 +44,7 @@ def test_search_knowledge(client, db_session):
         "Payment API is returning HTTP 500 errors",
         limit=1,
     )
-
+    
     assert len(results) == 1
-    assert results[0].title == "Payment Service HTTP 500"
+    assert results[0].document.title == "Payment Service HTTP 500"
+    assert 0.0 <= results[0].distance <= 1.0
