@@ -143,6 +143,7 @@ def test_analyze_incident_passes_knowledge_to_ai(client):
         ],
     )
 
+    # Patch the knowledge_service.search_knowledge function to return a mock knowledge document when called. This allows us to simulate the behavior of the knowledge search without actually querying the knowledge base.
     mock_knowledge = KnowledgeDocument(
                 id=1,
                 title="Payment Service Runbook",
