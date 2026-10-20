@@ -1,7 +1,7 @@
 from unittest.mock import patch
 from app.models.knowledge_document import KnowledgeDocument
 from app.ai.analyzer import IncidentAnalysis
-
+from app.services.knowledge_service import KnowledgeSearchResult
 
 # Test the analyze_incident endpoint
 def test_analyze_incident(client):
@@ -26,6 +26,9 @@ def test_analyze_incident(client):
         "app.services.incident_service.run_ai_analysis",
         return_value=mock_analysis,
         ) as mock_run_ai_analysis:
+
+    
+        # Test the analyze_incident endpoint with a valid incident ID and verify that the response contains the expected analysis results.
         create_response = client.post(
             "/incidents",
             json={
@@ -70,6 +73,7 @@ def test_analyze_incident(client):
         "Check recent deployments.",
         "Verify database connectivity.",
     ]
+    
 
 
 
@@ -81,19 +85,25 @@ def test_analyze_incident_ai_service_unavailable(client):
     ):
          
         mock_knowledge = KnowledgeDocument(
+            id=101,
             title="Payment Service Runbook",
             content=(
-                "For HTTP 500 errors, review application logs, "
-                "recent deployments, and database connectivity."
+                "For HTTP 500 errors, check database connectivity "
+                "and review recent deployments."
             ),
             source="payment-service.md",
             document_type="runbook",
             chunk_index=0,
         )
+
+        mock_knowledge_result = KnowledgeSearchResult(
+            document=mock_knowledge,
+            distance=0.15,
+        )
         
         with patch(
             "app.services.incident_service.knowledge_service.search_knowledge",
-            return_value=[mock_knowledge],
+            return_value=[mock_knowledge_result],
         ):
             create_response = client.post(
             "/incidents",
@@ -145,20 +155,25 @@ def test_analyze_incident_passes_knowledge_to_ai(client):
 
     # Patch the knowledge_service.search_knowledge function to return a mock knowledge document when called. This allows us to simulate the behavior of the knowledge search without actually querying the knowledge base.
     mock_knowledge = KnowledgeDocument(
-                id=1,
+                id=101,
                 title="Payment Service Runbook",
                 content=(
-                    "For HTTP 500 errors, review application logs, "
-                    "recent deployments, and database connectivity."
+                    "For HTTP 500 errors, check database connectivity "
+                    "and review recent deployments."
                 ),
                 source="payment-service.md",
                 document_type="runbook",
                 chunk_index=0,
             )
+    
+    mock_knowledge_result = KnowledgeSearchResult(
+                document=mock_knowledge,
+                distance=0.15,
+            )
 
     with patch(
         "app.services.incident_service.knowledge_service.search_knowledge",
-        return_value=[mock_knowledge],
+        return_value=[mock_knowledge_result],
     ), patch(
         "app.services.incident_service.run_ai_analysis",
         return_value=mock_analysis,
