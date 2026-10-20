@@ -125,8 +125,8 @@ class IncidentService:
         )
 
         knowledge_context = [
-            document.content
-            for document in knowledge_context_documents
+            result.document.content
+            for result in knowledge_context_documents
         ]
 
 
@@ -140,14 +140,16 @@ class IncidentService:
             # Create a list of KnowledgeSource instances based on the knowledge documents used in the analysis. Each KnowledgeSource instance contains information about the document, such as its ID, title, source, document type, and chunk index.
             knowledge_sources = [
                 KnowledgeSource(
-                    id=document.id,
-                    title=document.title,
-                    source=document.source,
-                    document_type=document.document_type,
-                    chunk_index=document.chunk_index,
+                    id=result.document.id,
+                    title=result.document.title,
+                    source=result.document.source,
+                    document_type=result.document.document_type,
+                    chunk_index=result.document.chunk_index,
+                    similarity_score=1.0 - result.distance,
                 )
-                for document in knowledge_context_documents
+                for result in knowledge_context_documents
             ]
+
             
         # Handle any exceptions that occur during the AI analysis process. If an exception is raised, print the error message and raise an AIServiceError to indicate that the AI service could not complete the analysis.
         except Exception as exc:

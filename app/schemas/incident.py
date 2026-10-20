@@ -35,6 +35,7 @@ class Incident(IncidentCreate):
         "from_attributes": True
     }
 
+
 # Define the KnowledgeSource Pydantic model, which represents a reference to knowledge used during incident analysis. It includes fields for id, title, source, document_type, and chunk_index, with attribute-based access enabled in the model_config.
 class KnowledgeSource(BaseModel):
     """Reference to knowledge used during incident analysis."""
@@ -44,10 +45,12 @@ class KnowledgeSource(BaseModel):
     source: str
     document_type: str
     chunk_index: int
+    similarity_score: float
 
     model_config = {
         "from_attributes": True
     }
+
 
 # Define the IncidentAnalysisResponse Pydantic model, which represents the response of an AI incident analysis. It includes fields for summary, probable_cause, impact, recommended_actions, and knowledge_sources, which is a list of KnowledgeSource objects.
 class IncidentAnalysisResponse(BaseModel):
