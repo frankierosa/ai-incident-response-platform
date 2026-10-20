@@ -7,12 +7,26 @@ from sentence_transformers import SentenceTransformer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+# Import the KnowledgeDocument model from the app.models.knowledge_document module, which represents the structure of knowledge documents stored in the database.
 from app.models.knowledge_document import KnowledgeDocument
+
+# Import the dataclass decorator from the dataclasses module, which is used to create data classes in Python. Data classes provide a convenient way to define classes that primarily store data and automatically generate special methods like __init__ and __repr__.
+from dataclasses import dataclass
+
 
 # Define the project root and the directory where runbooks are stored. Also, specify the embedding model name to be used for generating embeddings of the runbook content.
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RUNBOOKS_DIR = PROJECT_ROOT / "data" / "runbooks"
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+
+
+# Define a data class called KnowledgeSearchResult, which represents the result of a knowledge search. It contains two attributes: document, which is an instance of KnowledgeDocument representing the retrieved knowledge document, and distance, which is a float representing the similarity distance between the query and the document's embedding.
+@dataclass
+class KnowledgeSearchResult:
+    document: KnowledgeDocument
+    distance: float
+
+
 
 # Define the KnowledgeService class, which is responsible for managing and retrieving knowledge related to incidents. This service includes methods for ingesting runbooks, splitting their content into chunks, generating embeddings, and storing them in the database.
 class KnowledgeService:
@@ -93,34 +107,44 @@ class KnowledgeService:
 
 
 
-    # Define the search_knowledge method, which takes a query string and searches for the most relevant knowledge chunks in the database based on their embeddings. The method returns a list of KnowledgeDocument instances that are most similar to the query. 
+    # Define the search_knowledge method, which takes a database session, a query string, and an optional limit on the number of results to return. It generates an embedding for the query, calculates the cosine distance between the query embedding and the embeddings of knowledge documents in the database, and retrieves the most relevant documents based on this distance. The method returns a list of KnowledgeSearchResult instances containing the retrieved documents and their corresponding distances. 
     def search_knowledge(
             self,
             db: Session,
             query: str,
             limit: int = 3,
-            ) -> list[KnowledgeDocument]:
-        
+    ) -> list[KnowledgeSearchResult]:
         """Find the most relevant knowledge chunks for a query."""
         
         query_embedding = self.embedding_model.encode(
             query,
             normalize_embeddings=True,
             show_progress_bar=False,
-            ).tolist()
+        ).tolist()
+        
         
         distance = KnowledgeDocument.embedding.cosine_distance(
             query_embedding
-            )
+        )
         
         statement = (
-            select(KnowledgeDocument)
-            .where(KnowledgeDocument.embedding.is_not(None))
-            .order_by(distance)
-            .limit(limit)
-            )
+            select(
+                KnowledgeDocument,
+                distance.label("distance"),
+        )
+        .where(KnowledgeDocument.embedding.is_not(None))
+        .order_by(distance)
+        .limit(limit)
+    )
         
-        return list(db.scalars(statement).all())
-
+        results = db.execute(statement).all()
+        
+        return [
+            KnowledgeSearchResult(
+                document=document,
+                distance=float(distance_value),
+            )
+            for document, distance_value in results
+        ]
 
 knowledge_service = KnowledgeService()
