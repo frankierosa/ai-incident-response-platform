@@ -118,15 +118,20 @@ class IncidentService:
 
 
         # Perform a knowledge search based on the incident description to retrieve relevant knowledge documents.
-        knowledge_context_documents = knowledge_service.search_knowledge(
+        knowledge_results = knowledge_service.search_knowledge(
             db,
             incident_data["description"],
             limit=3,
         )
 
+        knowledge_context_documents = [
+            result.document
+            for result in knowledge_results
+        ]
+
         knowledge_context = [
-            result.document.content
-            for result in knowledge_context_documents
+            document.content
+            for document in knowledge_context_documents
         ]
 
 
@@ -145,9 +150,9 @@ class IncidentService:
                     source=result.document.source,
                     document_type=result.document.document_type,
                     chunk_index=result.document.chunk_index,
-                    similarity_score=1.0 - result.distance,
+                    similarity=result.distance,
                 )
-                for result in knowledge_context_documents
+                for result in knowledge_results
             ]
 
             
