@@ -145,14 +145,14 @@ class IncidentService:
             # Create a list of KnowledgeSource instances based on the knowledge documents used in the analysis. Each KnowledgeSource instance contains information about the document, such as its ID, title, source, document type, and chunk index.
             knowledge_sources = [
                 KnowledgeSource(
-                    id=document.id,
-                    title=document.title,
-                    source=document.source,
-                    document_type=document.document_type,
-                    chunk_index=document.chunk_index,
-                    similarity=similarity,
+                    id=result.document.id,
+                    title=result.document.title,
+                    source=result.document.source,
+                    document_type=result.document.document_type,
+                    chunk_index=result.document.chunk_index,
+                    similarity=result.distance,
                 )
-                for document, similarity in knowledge_results
+                for result in knowledge_results
             ]
 
             
