@@ -107,44 +107,40 @@ class KnowledgeService:
 
 
 
-    # Define the search_knowledge method, which takes a database session, a query string, and an optional limit on the number of results to return. It generates an embedding for the query, calculates the cosine distance between the query embedding and the embeddings of knowledge documents in the database, and retrieves the most relevant documents based on this distance. The method returns a list of KnowledgeSearchResult instances containing the retrieved documents and their corresponding distances. 
+    # Define the search_knowledge method, which takes a database session, a query string, and an optional limit parameter. It generates an embedding for the query, calculates the cosine distance between the query embedding and the embeddings of knowledge documents in the database, and retrieves the most relevant knowledge chunks based on similarity. The method returns a list of tuples containing KnowledgeDocument instances and their corresponding similarity scores.
     def search_knowledge(
             self,
             db: Session,
             query: str,
             limit: int = 3,
-    ) -> list[KnowledgeSearchResult]:
+            ) -> list[tuple[KnowledgeDocument, float]]:
         """Find the most relevant knowledge chunks for a query."""
         
         query_embedding = self.embedding_model.encode(
             query,
             normalize_embeddings=True,
             show_progress_bar=False,
-        ).tolist()
-        
+            ).tolist()
         
         distance = KnowledgeDocument.embedding.cosine_distance(
             query_embedding
-        )
+            )
         
         statement = (
             select(
                 KnowledgeDocument,
-                distance.label("distance"),
+                (1 - distance).label("similarity"),
+            )
+            .where(KnowledgeDocument.embedding.is_not(None))
+            .order_by(distance)
+            .limit(limit)
         )
-        .where(KnowledgeDocument.embedding.is_not(None))
-        .order_by(distance)
-        .limit(limit)
-    )
         
         results = db.execute(statement).all()
         
         return [
-            KnowledgeSearchResult(
-                document=document,
-                distance=float(distance_value),
-            )
-            for document, distance_value in results
-        ]
+            (document, float(similarity))
+            for document, similarity in results
+            ]
 
 knowledge_service = KnowledgeService()

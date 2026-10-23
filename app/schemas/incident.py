@@ -45,7 +45,7 @@ class KnowledgeSource(BaseModel):
     source: str
     document_type: str
     chunk_index: int
-    similarity_score: float
+    similarity: float
 
     model_config = {
         "from_attributes": True
