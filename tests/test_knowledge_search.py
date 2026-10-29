@@ -47,5 +47,5 @@ def test_search_knowledge(client, db_session):
     
     result = results[0]
     
-    assert result[0].title == "Payment Service HTTP 500"
-    assert 0.0 <= result[1] <= 1.0
+    assert result.document.title == "Payment Service HTTP 500"
+    assert 0.0 <= result.distance <= 2

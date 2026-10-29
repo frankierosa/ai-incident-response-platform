@@ -113,7 +113,7 @@ class KnowledgeService:
             db: Session,
             query: str,
             limit: int = 3,
-            ) -> list[tuple[KnowledgeDocument, float]]:
+        ) -> list[KnowledgeSearchResult]:
         """Find the most relevant knowledge chunks for a query."""
         
         query_embedding = self.embedding_model.encode(
@@ -129,7 +129,7 @@ class KnowledgeService:
         statement = (
             select(
                 KnowledgeDocument,
-                (1 - distance).label("similarity"),
+                distance.label("distance"),
             )
             .where(KnowledgeDocument.embedding.is_not(None))
             .order_by(distance)
@@ -139,8 +139,11 @@ class KnowledgeService:
         results = db.execute(statement).all()
         
         return [
-            (document, float(similarity))
-            for document, similarity in results
+            KnowledgeSearchResult(
+                document=document,
+                distance=float(distance_value),
+            )
+            for document, distance_value in results
             ]
 
 knowledge_service = KnowledgeService()
