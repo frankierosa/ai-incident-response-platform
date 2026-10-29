@@ -122,18 +122,17 @@ class IncidentService:
             db,
             incident_data["description"],
             limit=3,
-        )
-
+            )
+        
         knowledge_context_documents = [
             result.document
             for result in knowledge_results
         ]
-
+        
         knowledge_context = [
             document.content
             for document in knowledge_context_documents
         ]
-
 
         # Call the analyze_incident function to perform AI analysis on the incident data, passing in the knowledge context if available.
         try:
@@ -150,7 +149,7 @@ class IncidentService:
                     source=result.document.source,
                     document_type=result.document.document_type,
                     chunk_index=result.document.chunk_index,
-                    similarity=result.distance,
+                    similarity=1 - result.distance,
                 )
                 for result in knowledge_results
             ]
@@ -158,6 +157,7 @@ class IncidentService:
             
         # Handle any exceptions that occur during the AI analysis process. If an exception is raised, print the error message and raise an AIServiceError to indicate that the AI service could not complete the analysis.
         except Exception as exc:
+            print(f"AI analysis error: {type(exc).__name__}: {exc}")
             raise AIServiceError() from exc
 
         
