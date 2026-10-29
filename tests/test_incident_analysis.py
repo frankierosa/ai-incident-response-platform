@@ -27,7 +27,7 @@ def test_analyze_incident(client):
         return_value=mock_analysis,
         ) as mock_run_ai_analysis:
 
-    
+
         # Test the analyze_incident endpoint with a valid incident ID and verify that the response contains the expected analysis results.
         create_response = client.post(
             "/incidents",
@@ -73,7 +73,7 @@ def test_analyze_incident(client):
         "Check recent deployments.",
         "Verify database connectivity.",
     ]
-    
+
 
 
 
@@ -83,7 +83,7 @@ def test_analyze_incident_ai_service_unavailable(client):
         "app.services.incident_service.run_ai_analysis",
         side_effect=Exception("429: You have no credits remaining"),
     ):
-         
+
         mock_knowledge = KnowledgeDocument(
             id=101,
             title="Payment Service Runbook",
@@ -100,7 +100,7 @@ def test_analyze_incident_ai_service_unavailable(client):
             document=mock_knowledge,
             distance=0.15,
         )
-        
+
         with patch(
             "app.services.incident_service.knowledge_service.search_knowledge",
             return_value=[mock_knowledge_result],
@@ -140,7 +140,7 @@ def test_analyze_incident_ai_service_unavailable(client):
 )
 
 
-    
+
 # Test that the knowledge context is passed to the AI analysis function
 def test_analyze_incident_passes_knowledge_to_ai(client):
     mock_analysis = IncidentAnalysis(
@@ -165,7 +165,7 @@ def test_analyze_incident_passes_knowledge_to_ai(client):
                 document_type="runbook",
                 chunk_index=0,
             )
-    
+
     mock_knowledge_result = KnowledgeSearchResult(
                 document=mock_knowledge,
                 distance=0.15,
@@ -200,11 +200,11 @@ def test_analyze_incident_passes_knowledge_to_ai(client):
         response = client.post(
             f"/incidents/{incident_id}/analyze"
         )
-        
-        
+
+
         assert response.status_code == 200
         mock_run_ai_analysis.assert_called_once()
-        
+
         call_args = mock_run_ai_analysis.call_args
 
         assert call_args.kwargs["knowledge_context"] == [
@@ -270,12 +270,12 @@ def test_analyze_incident_without_knowledge(client):
         response = client.post(
             f"/incidents/{incident_id}/analyze"
         )
-        
+
     assert response.status_code == 200
 
     mock_run_ai_analysis.assert_called_once()
     assert mock_run_ai_analysis.call_args.kwargs["knowledge_context"] == []
-       
+
     data = response.json()
     assert data["knowledge_sources"] == []
 
