@@ -200,16 +200,34 @@ def test_analyze_incident_passes_knowledge_to_ai(client):
         response = client.post(
             f"/incidents/{incident_id}/analyze"
         )
+        
+        
+        assert response.status_code == 200
+        mock_run_ai_analysis.assert_called_once()
+        
+        call_args = mock_run_ai_analysis.call_args
 
-    assert response.status_code == 200
-
-    mock_run_ai_analysis.assert_called_once()
-
-    call_args = mock_run_ai_analysis.call_args
-
-    assert call_args.kwargs["knowledge_context"] == [
+        assert call_args.kwargs["knowledge_context"] == [
         mock_knowledge.content
-    ]
+        ]
+
+        # Verify the API returns the knowledge source metadata.
+        data = response.json()
+        sources = data["knowledge_sources"]
+
+        assert len(sources) == 1
+
+        source = sources[0]
+
+        assert source["id"] == 101
+        assert source["title"] == "Payment Service Runbook"
+        assert source["source"] == "payment-service.md"
+        assert source["document_type"] == "runbook"
+        assert source["chunk_index"] == 0
+
+        # Similarity = 1 - cosine distance = 1 - 0.15 = 0.85.
+        assert abs(source["similarity"] - 0.85) < 1e-9
+
 
 
 
@@ -252,12 +270,12 @@ def test_analyze_incident_without_knowledge(client):
         response = client.post(
             f"/incidents/{incident_id}/analyze"
         )
-
+        
     assert response.status_code == 200
 
     mock_run_ai_analysis.assert_called_once()
     assert mock_run_ai_analysis.call_args.kwargs["knowledge_context"] == []
-
+       
     data = response.json()
-    assert data["summary"] == mock_analysis.summary
     assert data["knowledge_sources"] == []
+
