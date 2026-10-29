@@ -10,10 +10,11 @@
   <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-database-4169E1?logo=postgresql&logoColor=white">
   <img alt="SQLAlchemy" src="https://img.shields.io/badge/SQLAlchemy-ORM-D71F00">
   <img alt="pytest" src="https://img.shields.io/badge/pytest-tests-0A9EDC?logo=pytest&logoColor=white">
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
   <img alt="Project status" src="https://img.shields.io/badge/status-in%20development-orange">
 </p>
 
-> **Portfolio project:** This project connects enterprise technical support and production troubleshooting experience with Python backend engineering, API design, persistence, automated testing, and AI-assisted investigation. It is actively evolving; the status sections distinguish implemented code from features that still need end-to-end validation.
+> **Portfolio project:** This project applies Python backend engineering, REST API design, relational database persistence, automated testing, and AI-assisted investigation to a practical production-support use case.
 
 ## Contents
 
@@ -21,184 +22,191 @@
 - [Problem and goals](#problem-and-goals)
 - [Current progress](#current-progress)
 - [Architecture](#architecture)
-- [AI analysis and RAG direction](#ai-analysis-and-rag-direction)
+- [AI analysis and RAG](#ai-analysis-and-rag)
 - [Technology stack](#technology-stack)
-- [API overview](#api-overview)
+- [API reference](#api-reference)
 - [Data and persistence](#data-and-persistence)
 - [Testing and quality](#testing-and-quality)
 - [Run locally](#run-locally)
+- [Run with Docker Compose](#run-with-docker-compose)
 - [Development workflow](#development-workflow)
 - [Roadmap](#roadmap)
+- [Versioning and releases](#versioning-and-releases)
 - [Portfolio value](#portfolio-value)
 - [License](#license)
 
 ## Project overview
 
-Production incidents can require engineers to correlate symptoms, affected services, past incidents, logs, runbooks, and operational procedures before choosing the next troubleshooting step. This project is building a backend foundation to record incidents and produce structured AI-assisted analysis.
+Production incidents often require engineers to correlate symptoms, affected services, historical incidents, runbooks, and operational procedures before determining the next troubleshooting step.
 
-The current application combines a FastAPI REST API, PostgreSQL persistence through SQLAlchemy, an incident-analysis service, and an emerging knowledge-search path. The next development focus is **RAG transparency and traceability**: making it easier to inspect what knowledge was retrieved, what context was supplied to analysis, and how to validate that retrieval actually contributes to the result.
+The AI Production Incident Response Platform is a backend application designed to record incidents and support structured, AI-assisted investigation. It combines a FastAPI REST API, PostgreSQL persistence through SQLAlchemy, an incident-analysis service, and a knowledge-search component.
+
+The current development focus is improving **retrieval transparency and traceability** so that the knowledge used during an analysis can be inspected and its flow into the AI analysis process can be tested.
 
 ### Project goals
 
-- Provide REST endpoints to create and retrieve incident records.
-- Persist incident data and generated analysis in PostgreSQL.
-- Return consistent, structured analysis fields.
-- Handle AI-provider connection, availability, and credit/configuration failures through application-level errors.
-- Build a reusable knowledge-search service and connect optional retrieved context to the analysis flow.
-- Add tests that verify both expected results and failure behavior.
-- Progress toward reproducible containerized development and automated delivery.
+- Provide REST endpoints for creating and retrieving incident records.
+- Persist incident information and analysis results in PostgreSQL.
+- Return structured incident-analysis responses.
+- Handle AI-provider failures through predictable application-level errors.
+- Develop a knowledge-search workflow for relevant operational documentation.
+- Test successful operations and expected failure scenarios.
+- Support reproducible local development using Docker Compose.
+- Establish a foundation for automated testing, versioned releases, and future deployment automation.
 
 ## Problem and goals
 
-| Operational challenge | Project direction |
+| Operational challenge | Project approach |
 |---|---|
-| Incident details are inconsistent or scattered | Use validated request/response schemas and persisted incident records |
-| Troubleshooting starts from scratch | Develop a knowledge-search layer for relevant operational context |
-| AI responses can be difficult to consume programmatically | Return structured analysis fields |
-| External AI services can fail | Translate provider failures into defined application errors |
-| AI recommendations need to be auditable | Add retrieval transparency, context traceability, and focused tests |
-| Local environments can drift | Add reproducible Docker setup and CI after the app configuration is stabilized |
+| Incident information can be inconsistent or scattered | Validated API schemas and persisted incident records |
+| Troubleshooting can require repeated manual research | A knowledge-search component for operational context |
+| AI responses may be difficult to consume programmatically | Structured analysis fields |
+| External AI services can become unavailable | Application-level exception handling |
+| AI recommendations need supporting context | Retrieval traceability and testable context flow |
+| Development environments can differ | Docker and Docker Compose configuration |
 
 ## Current progress
 
-### Implemented in the codebase
+### Implemented and verified
 
-- FastAPI application and `GET /health` health-check endpoint.
-- Incident REST routes and Pydantic request/response schemas.
-- SQLAlchemy models and service logic for incident persistence.
-- PostgreSQL-backed incident records.
-- Incident-analysis service flow and persisted analysis records.
-- Structured analysis fields, including summary, probable cause, impact, and recommended actions.
-- AI-provider exception handling for connection/service availability issues, including cases such as unavailable credits.
-- A reusable knowledge-search service scaffold.
-- Connection from incident analysis to the knowledge-search service.
-- Analyzer support for receiving optional knowledge context.
-- pytest coverage for incident-analysis success and AI-service failure paths (test suite should be rerun after the latest error-handling changes before claiming a current pass count).
+- FastAPI application and health-check endpoint.
+- Incident API routes and request/response schemas.
+- SQLAlchemy models and service-layer persistence.
+- PostgreSQL-backed incident operations.
+- Incident-analysis service and persisted analysis records.
+- Structured AI-analysis response fields.
+- Application-level handling for AI-service availability failures.
+- Knowledge-search service integrated into the incident-analysis flow.
+- Support for passing optional knowledge context to the analyzer.
+- Dockerfile and Docker Compose configuration for the application and PostgreSQL.
+- **Manual API verification:** all implemented GET and POST endpoints have been tested successfully by the project developer.
 
-### In progress / needs verification
+### In progress
 
-- **RAG transparency and traceability:** expose and test what knowledge was retrieved and whether it was passed to the analyzer.
-- Verify knowledge-document ingestion and the complete retrieval path.
-- Resolve and test the embedding/retrieval mismatch before describing semantic search as operational.
-- Confirm the intended error response and test assertions remain aligned after recent exception-handling changes.
-- Verify database startup, configuration, and test isolation in a repeatable local environment.
-- Expand database integration tests and add explicit tests for knowledge-retrieval success, empty results, and failure cases.
+- Improving RAG transparency and source traceability.
+- Validating the complete knowledge-ingestion and vector-retrieval workflow.
+- Expanding automated database integration and retrieval tests.
+- Strengthening end-to-end validation of AI analysis with retrieved knowledge.
+- Refining configuration and deployment documentation.
 
-### Planned — not yet complete
+### Planned enhancements
 
-- Fully validated embedding generation and vector similarity search using pgvector.
-- End-to-end RAG evaluation with retrieved context demonstrably influencing analysis.
-- Dockerfile and Docker Compose workflow for a clean local setup.
-- GitHub Actions test workflow and automated container build.
+- GitHub Actions continuous integration.
+- Automated container build and validation.
 - Versioned container publishing to GitHub Container Registry (GHCR).
 - Semantic versioning and GitHub Releases.
 - Kubernetes deployment and operational observability.
 
 ## Architecture
 
-### Current high-level application flow
+### Application flow
 
 ```mermaid
 flowchart TD
-    Client[API Client<br/>curl / Postman / Swagger UI] --> API[FastAPI]
-    API --> IR[Incident Routes]
-    API --> AR[Incident Analysis Route]
-    IR --> IS[Incident Service]
-    IS --> DB[(PostgreSQL)]
-    AR --> AS[Incident Analysis Service]
-    AS --> KS[Knowledge Search Service]
-    AS --> Analyzer[AI Analyzer]
-    KS -. optional knowledge context .-> Analyzer
-    Analyzer --> AS
-    AS --> DB
-    DB --> IncidentRows[Incident records]
-    DB --> AnalysisRows[Incident analysis records]
+    Client[API Client] --> API[FastAPI Application]
+    API --> Routes[Incident API Routes]
+    Routes --> Service[Incident Service]
+    Service --> DB[(PostgreSQL)]
+    Routes --> Analysis[Incident Analysis Service]
+    Analysis --> Knowledge[Knowledge Search Service]
+    Analysis --> Analyzer[AI Analyzer]
+    Knowledge -. Optional Context .-> Analyzer
+    Analyzer --> Analysis
+    Analysis --> DB
 ```
 
-This is a conceptual view of the current code paths. The knowledge-search integration and optional analyzer context are present in the codebase, but the full embedding/vector retrieval and RAG behavior still require end-to-end verification.
+The application separates API routing, service logic, persistence, and AI-assisted analysis. The knowledge-search component is connected to the analysis workflow; full retrieval quality and traceability remain active development areas.
 
 ### Intended RAG workflow
 
 ```mermaid
 flowchart TD
-    Docs[Runbooks / Knowledge Documents] --> Ingest[Ingestion and Text Processing]
-    Ingest --> Chunks[Chunking]
-    Chunks --> Embed[Embedding Generation]
-    Embed --> Vector[(Vector Store / pgvector)]
-    Incident[Incident Details] --> Query[Build Retrieval Query]
+    Docs[Runbooks and Knowledge Documents] --> Ingest[Document Ingestion]
+    Ingest --> Chunks[Text Chunking]
+    Chunks --> Embeddings[Embedding Generation]
+    Embeddings --> Vector[(pgvector)]
+    Incident[Incident Details] --> Query[Retrieval Query]
     Query --> Search[Similarity Search]
     Vector --> Search
-    Search --> Evidence[Retrieved Chunks and Metadata]
-    Evidence --> Context[Traceable Analysis Context]
+    Search --> Context[Retrieved Context and Source Metadata]
     Incident --> Context
-    Context --> LLM[AI Analyzer]
-    LLM --> Result[Summary, Probable Cause, Impact, Recommended Actions]
-    Evidence --> Audit[Retrieval Trace / Debug Details]
-    Context --> Audit
+    Context --> Analyzer[AI Analyzer]
+    Analyzer --> Result[Structured Analysis]
 ```
 
-**Important:** the diagram describes the intended end-to-end target. It does not claim that ingestion, embeddings, vector search, or retrieval trace output are already complete. These will be marked complete only after implementation and tests confirm the behavior.
+This diagram represents the intended retrieval-augmented generation workflow. End-to-end ingestion, vector search, and traceability should be considered complete only after their behavior is verified by implementation and tests.
 
-## AI analysis and RAG direction
+## AI analysis and RAG
 
-The analysis workflow is being developed around the following stages:
+The analysis workflow is designed to:
 
-1. Load the incident to analyze.
-2. Ask the knowledge-search layer for relevant context when available.
-3. Pass incident details and optional knowledge context to the analyzer.
-4. Produce structured analysis output.
-5. Persist the analysis result.
-6. Handle AI-provider failures using a predictable application error.
+1. Retrieve the incident selected for analysis.
+2. Search for relevant operational knowledge when available.
+3. Supply incident details and optional knowledge context to the analyzer.
+4. Generate structured analysis results.
+5. Persist the analysis.
+6. Return a defined application error when the AI provider is unavailable.
 
-### Transparency and traceability milestone
+### Retrieval transparency milestone
 
-The next milestone is to make the retrieval path inspectable and testable. Planned acceptance checks include:
+Current development priorities include:
 
-- Record whether retrieval was attempted.
-- Make the retrieved items or safe metadata inspectable for debugging.
-- Preserve source identifiers or document references when available.
-- Distinguish “no relevant knowledge found” from “retrieval failed.”
-- Verify that retrieved context is actually passed to the analyzer.
-- Add tests for relevant results, empty results, and retrieval exceptions.
-- Avoid logging secrets, API keys, or unnecessary sensitive incident content.
+- Verifying that retrieved knowledge is passed to the analyzer.
+- Preserving source identifiers and document metadata where available.
+- Distinguishing empty search results from retrieval failures.
+- Testing successful retrieval, empty results, and exceptions.
+- Making relevant retrieval information inspectable for debugging.
+- Avoiding the logging of API keys, secrets, or unnecessary sensitive incident data.
 
-These items are a development target, not a claim that a complete trace/audit subsystem already exists.
+These improvements are intended to make the analysis workflow easier to test, understand, and maintain.
 
 ## Technology stack
 
-| Area | Technology | Current status |
+| Area | Technology | Status |
 |---|---|---|
 | Language | Python | In use |
 | Backend | FastAPI | Implemented |
-| API style | REST | Implemented |
+| API | REST | Implemented; GET and POST endpoints manually tested |
 | Validation | Pydantic | In use |
 | ORM | SQLAlchemy | In use |
-| Database | PostgreSQL | Integrated; environment reliability still needs verification |
-| Automated tests | pytest | In use; rerun required after latest changes |
-| AI analysis | LLM-backed analyzer | Structured analysis flow and provider error handling implemented |
-| Knowledge retrieval | Knowledge-search service | Integrated into analysis flow; end-to-end behavior needs verification |
-| Embeddings / vector search | pgvector intended | Not yet confirmed end to end |
-| Containers | Docker / Docker Compose | Planned reproducible application setup |
+| Database | PostgreSQL | Integrated |
+| Testing | pytest | In use |
+| AI analysis | LLM-backed analysis service | Implemented with provider-error handling |
+| Knowledge retrieval | Python knowledge-search service | Integrated; end-to-end validation ongoing |
+| Embeddings and vector search | Sentence Transformers and pgvector | Retrieval validation ongoing |
+| Containerization | Docker and Docker Compose | Configuration implemented |
 | CI/CD | GitHub Actions | Planned |
-| Image registry | GitHub Container Registry | Planned |
+| Container registry | GHCR | Planned |
 | Orchestration | Kubernetes | Future milestone |
-| Source control | Git / GitHub | In use; feature branches and pull requests |
+| Source control | Git and GitHub | In use |
 
-## API overview
+## API reference
 
-The application includes a health endpoint and incident/analysis routes. The expected route set is:
+The API provides health checks, incident management, AI-assisted analysis, and knowledge ingestion.
 
 | Method | Endpoint | Purpose |
 |---|---|---|
 | `GET` | `/health` | Check application health |
 | `POST` | `/incidents` | Create an incident |
 | `GET` | `/incidents` | List incidents |
-| `GET` | `/incidents/{id}` | Retrieve an incident |
-| `POST` | `/incidents/{id}/analyze` | Request AI-assisted incident analysis |
+| `GET` | `/incidents/{incident_id}` | Retrieve a specific incident |
+| `POST` | `/incidents/{incident_id}/analyze` | Request AI-assisted analysis |
+| `POST` | `/incidents/knowledge/ingest` | Trigger knowledge-document ingestion |
 
-The successful analysis response is designed around structured fields such as `summary`, `probable_cause`, `impact`, and `recommended_actions`. When the AI provider is unavailable, the application has an error-handling path intended to return a defined service error; verify the exact status, error code, and message with the current tests before treating the contract as finalized.
+All implemented GET and POST endpoints have been manually tested successfully.
 
-When running locally, the interactive API documentation is normally available at:
+### Analysis response and error handling
+
+Successful analysis responses use structured fields such as:
+
+- `summary`
+- `probable_cause`
+- `impact`
+- `recommended_actions`
+
+When the AI service is unavailable, the application includes a defined error-handling path. For example, the analysis endpoint is designed to return HTTP `503 Service Unavailable` with a structured `AI_SERVICE_UNAVAILABLE` error.
+
+The interactive API documentation is available at:
 
 ```text
 http://localhost:8000/docs
@@ -206,41 +214,53 @@ http://localhost:8000/docs
 
 ## Data and persistence
 
-PostgreSQL is accessed through SQLAlchemy models and service methods. Current persistence work covers incident records and incident-analysis records. Knowledge ingestion and vector storage should be treated as separate capabilities until their schemas, setup, and end-to-end behavior are confirmed.
+The application uses PostgreSQL with SQLAlchemy models and service methods to manage incident data and analysis records.
 
-Before running database-backed routes or tests, confirm that:
+Knowledge-search functionality is being developed around operational documents, chunking, embeddings, and vector similarity search. The reliability and completeness of this workflow remain separate validation objectives from the successful incident API tests.
 
-- The intended PostgreSQL container/service is running.
-- The configured host, port, database, and credentials match the active environment.
-- The application can establish a database connection.
-- Tests use a known test database/configuration and clean up their data appropriately.
+For database-backed operations, confirm that:
 
-A previously created Docker container is not evidence that PostgreSQL is currently running or reachable.
+- PostgreSQL is running and reachable.
+- The configured connection URL matches the active environment.
+- Database credentials are supplied through environment variables.
+- Database initialization completes successfully.
+- Automated tests use an appropriate test database and manage test data safely.
 
 ## Testing and quality
 
-Run tests from the repository root after activating the virtual environment and configuring the required database and AI-related test settings:
+Run the automated tests from the repository root after activating the virtual environment and configuring the required environment.
 
 ```bash
 pytest -v
 ```
 
-Run the incident-analysis tests separately:
+To run the incident-analysis tests separately:
 
 ```bash
 pytest -v tests/test_incident_analysis.py
 ```
 
-Current test priorities:
+Additional focused tests can be run as needed, for example:
 
-- Incident-analysis success response and structured fields.
-- AI-provider unavailable/error path and stable public error response.
-- Incident creation and persistence.
-- Knowledge-search results passed into the analyzer.
-- Empty retrieval results and retrieval exceptions.
-- Database integration and retrieval behavior.
+```bash
+pytest -v tests/test_knowledge_search.py
+```
 
-**Validation note:** this README does not publish a passing test count because a fresh test run after the latest error-handling changes has not been confirmed here. Update this section with the actual command and result after running the tests.
+### Validation coverage
+
+Current verification includes successful manual testing of all implemented GET and POST API endpoints.
+
+Ongoing automated-testing priorities include:
+
+- Incident creation and retrieval.
+- Database persistence and integration behavior.
+- Structured analysis responses.
+- AI-provider failure handling.
+- Knowledge results passed to the analyzer.
+- Empty knowledge-search results.
+- Retrieval exceptions and source traceability.
+
+Manual API testing and automated test-suite results are tracked separately. A passing test count should be published only after the relevant test command has been run against the current code.
 
 ## Run locally
 
@@ -252,136 +272,205 @@ cd ai-incident-response-platform
 
 python -m venv .venv
 source .venv/bin/activate
+
 python -m pip install -r requirements.txt
 ```
 
-Configure the database and any required AI-provider settings using the environment variables and configuration expected by the current code. Do not commit secrets or API keys.
+Configure the environment variables required by the application, including the database connection URL and any AI-provider credentials needed for analysis. Do not commit `.env` files containing secrets.
 
-Start the API using the standard FastAPI development command, if it matches the current application entry point:
+Start the API:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Then open `http://localhost:8000/docs`.
+Open the interactive API documentation:
 
-> Docker Compose instructions will be added once the repository's container configuration and environment-variable requirements are finalized and verified. Until then, configure and start PostgreSQL separately.
+```text
+http://localhost:8000/docs
+```
+
+For a reproducible application and database environment, use Docker Compose as described below.
+
+## Run with Docker Compose
+
+The repository includes a Dockerfile and a Compose configuration for running the API with PostgreSQL.
+
+### Prerequisites
+
+- Docker Desktop or Docker Engine with Docker Compose.
+- A local `.env` file configured from `.env.example`.
+
+### Setup
+
+From the repository root:
+
+```bash
+cp .env.example .env
+```
+
+Review `.env` and configure the required values, including `POSTGRES_PASSWORD`. Use a strong local password and keep the `.env` file out of version control.
+
+Start the services:
+
+```bash
+docker compose up --build -d
+```
+
+Check the service status:
+
+```bash
+docker compose ps
+```
+
+Review logs if startup or connectivity problems occur:
+
+```bash
+docker compose logs -f api
+docker compose logs -f db
+```
+
+When the API is ready, open:
+
+```text
+http://localhost:8000/docs
+```
+
+Stop the services:
+
+```bash
+docker compose down
+```
+
+To remove the database volume as well as the containers, use the following command only when you intend to delete the persisted local database data:
+
+```bash
+docker compose down -v
+```
+
+**Note:** The first startup may take longer while Docker downloads images, installs dependencies, initializes the database, or downloads the embedding model. Never remove the database volume if you need to preserve its data.
 
 ## Development workflow
 
-The repository is the source of truth for application code. Container images are build artifacts and should not be committed to Git.
+The GitHub repository is the source of truth for application code. Container images are build artifacts and should not be committed to the repository.
 
-Use focused feature branches and pull requests rather than making feature changes directly on `main`:
+Use feature branches and pull requests rather than implementing features directly on `main`.
 
 ```bash
 git checkout main
 git pull origin main
-git checkout -b feature/rag-transparency-traceability
+git checkout -b feature/your-feature-name
 ```
 
-After a change:
+For each change:
 
-1. Make the smallest safe implementation change.
-2. Add or update focused tests.
-3. Run the relevant tests and record the actual result.
-4. Commit the change with a clear message.
-5. Push the feature branch and open a pull request.
-6. Review and merge only after the change is validated.
+1. Make a focused implementation change.
+2. Add or update relevant tests.
+3. Run the relevant test commands.
+4. Review the changes locally.
+5. Commit with a clear, descriptive message.
+6. Push the feature branch and open a pull request.
+7. Merge after review and validation.
 
-Suggested future branches:
+Examples of potential future feature branches:
 
 - `feature/rag-transparency-traceability`
 - `feature/knowledge-ingestion`
 - `feature/vector-retrieval`
-- `feature/docker-compose`
 - `feature/ci-cd`
 - `feature/kubernetes`
 
 ## Roadmap
 
-### Phase 1 — Backend and persistence
+### Phase 1 — API and persistence
 
 - [x] FastAPI application and health endpoint
 - [x] Incident API routes and schemas
-- [x] SQLAlchemy incident persistence
-- [x] Incident-analysis model and service flow
-- [ ] Verify clean database startup and integration tests
-- [ ] Re-run and stabilize the complete test suite
+- [x] SQLAlchemy-based persistence
+- [x] Incident-analysis workflow
+- [x] Manual testing of implemented GET and POST endpoints
 
 ### Phase 2 — Knowledge search and RAG
 
 - [x] Initial knowledge-search service
-- [x] Connect knowledge search to the incident-analysis flow
-- [x] Allow the analyzer to receive optional knowledge context
-- [ ] Implement and verify document ingestion
-- [ ] Resolve embedding/retrieval mismatch
-- [ ] Validate vector similarity search end to end
-- [ ] Add retrieval transparency and traceability
-- [ ] Prove retrieved context is passed through and tested
+- [x] Connect knowledge search to the analysis workflow
+- [x] Support optional knowledge context in analysis
+- [ ] Verify document ingestion end to end
+- [ ] Validate embedding generation and vector similarity search
+- [ ] Improve retrieval transparency and source traceability
+- [ ] Expand tests for empty results and retrieval failures
 
-### Phase 3 — AI analysis quality and resilience
+### Phase 3 — Resilience and quality
 
-- [x] Structured analysis output
-- [x] AI-provider exception-handling path
-- [ ] Confirm public error contract with tests
-- [ ] Test missing incidents and knowledge retrieval failures
+- [x] Structured analysis response
+- [x] AI-provider error-handling path
+- [ ] Expand automated integration tests
+- [ ] Evaluate the relevance of retrieved knowledge
 - [ ] Evaluate analysis quality and recommended actions
 
 ### Phase 4 — Reproducible deployment
 
-- [ ] Finalize Dockerfile and Docker Compose
-- [ ] Document environment variables and local startup
-- [ ] Validate clean startup, shutdown, and persistence
+- [x] Dockerfile
+- [x] Docker Compose configuration
+- [x] PostgreSQL service configuration
+- [ ] Document and validate a clean setup from a fresh environment
+- [ ] Verify database persistence across container restarts
 
 ### Phase 5 — CI/CD and releases
 
-- [ ] Add GitHub Actions test workflow
+- [ ] Add a GitHub Actions test workflow
 - [ ] Automate container build and validation
 - [ ] Publish versioned images to GHCR
-- [ ] Adopt semantic versioning and GitHub Releases
+- [ ] Establish semantic versioning and GitHub Releases
 
 ### Phase 6 — Kubernetes and operations
 
-- [ ] Add Kubernetes manifests and configuration
+- [ ] Add Kubernetes deployment configuration
 - [ ] Configure readiness and liveness probes
-- [ ] Define resource requests/limits and scaling approach
+- [ ] Define resource requests and limits
 - [ ] Add structured logging, metrics, and observability
-- [ ] Evaluate cloud deployment
+- [ ] Evaluate cloud deployment options
 
-## Versioning and container distribution
+## Versioning and releases
 
-The planned release process uses Semantic Versioning (`MAJOR.MINOR.PATCH`) and Git tags/GitHub Releases to identify stable milestones. Versioned GHCR publishing is also planned; no release or published image should be assumed until it is available in the repository.
+The planned release process follows Semantic Versioning:
 
-Intended delivery flow:
+`MAJOR.MINOR.PATCH`
+
+Git tags and GitHub Releases will identify stable milestones. Versioned container publishing to GHCR is also planned.
+
+Intended delivery workflow:
 
 ```mermaid
 flowchart LR
     Feature[Feature Branch] --> PR[Pull Request]
     PR --> Tests[Automated Tests]
     Tests --> Merge[Merge to Main]
-    Merge --> Build[Build Container Image]
-    Build --> Release[Tag Version / GitHub Release]
-    Release --> Registry[Publish to GHCR]
+    Merge --> Build[Build Container]
+    Build --> Tag[Version Tag and Release]
+    Tag --> Registry[Publish to GHCR]
 ```
+
+These release and publishing steps are roadmap items until they are implemented and verified.
 
 ## Portfolio value
 
-This project demonstrates incremental work on practical backend engineering problems:
+This project demonstrates practical work in:
 
-- Python application development and service-layer organization.
-- REST API design using FastAPI.
-- Request/response validation with Pydantic.
-- Relational persistence using PostgreSQL and SQLAlchemy.
+- Python backend development and service-layer organization.
+- REST API design with FastAPI.
+- Request and response validation with Pydantic.
+- PostgreSQL persistence with SQLAlchemy.
 - Automated testing with pytest.
 - Structured AI-assisted incident analysis.
-- External-service exception handling.
-- A reusable knowledge-search layer and the foundation for RAG.
-- Retrieval transparency as an engineering goal: inspectability, source traceability, and testable context flow.
-- Professional Git branching, pull requests, and review-oriented changes.
-- A roadmap toward Docker, CI/CD, release management, GHCR, and Kubernetes.
+- External-service error handling.
+- Knowledge retrieval and the foundation for RAG.
+- Docker-based local development.
+- Git feature branches, pull requests, and review-oriented changes.
+- A roadmap toward CI/CD, versioned releases, and Kubernetes deployment.
 
-The operational use case is deliberate: apply software engineering and AI techniques to a familiar production-support problem—helping engineers investigate incidents more consistently and with relevant historical knowledge.
+The use case connects production-support experience with software engineering: helping engineers investigate incidents more consistently and work toward using relevant operational knowledge during troubleshooting.
 
 ## License
 
-A formal open-source license has not yet been added. Until a license is included in the repository, reuse and redistribution remain subject to the default copyright rules.
+A formal open-source license should be added before the project is presented as available for unrestricted reuse or redistribution. Until a license is included in the repository, the default copyright rules apply.
