@@ -313,7 +313,7 @@ For a reproducible application and database environment, use Docker Compose as d
 
 ## Run with Docker Compose
 
-The repository includes a Dockerfile and a Compose configuration for running the API with PostgreSQL.
+The repository includes a Dockerfile and Docker Compose configuration for running the FastAPI application alongside a PostgreSQL database with the pgvector extension enabled.
 
 ### Prerequisites
 
@@ -328,7 +328,13 @@ From the repository root:
 cp .env.example .env
 ```
 
-Review `.env` and configure the required values, including `POSTGRES_PASSWORD`. Use a strong local password and keep the `.env` file out of version control.
+Review `.env` and configure the required values:
+
+- `DATABASE_URL`: Local PostgreSQL connection string used for development outside Docker.
+- `POSTGRES_PASSWORD`: Password used by the PostgreSQL service in Docker Compose.
+- `OPENAI_API_KEY`: Required for live AI analysis; optional when testing API functionality without live AI calls.
+
+Use a strong local database password. Keep `.env` out of version control, and never commit API keys or database credentials.
 
 Start the services:
 
@@ -341,6 +347,26 @@ Check the service status:
 ```bash
 docker compose ps
 ```
+
+### Verify deployment
+
+Check the API health endpoint:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+Verify the interactive API documentation at `http://localhost:8000/docs`.
+
+The PostgreSQL service uses a named Docker volume to preserve database data across container restarts.
 
 Review logs if startup or connectivity problems occur:
 
@@ -433,7 +459,7 @@ Examples of potential future feature branches:
 - [x] Docker Compose configuration
 - [x] PostgreSQL service configuration
 - [ ] Document and validate a clean setup from a fresh environment
-- [ ] Verify database persistence across container restarts
+- [x] Verify database persistence across container restarts
 
 ### Phase 5 — CI/CD and releases
 
