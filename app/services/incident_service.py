@@ -170,6 +170,10 @@ class IncidentService:
             recommended_actions=json.dumps(
                 analysis.recommended_actions
             ),
+            knowledge_sources=[
+                source.model_dump(mode="json")
+                for source in knowledge_sources
+            ],
             created_at=datetime.now(timezone.utc),
         )
 
