@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, JSON, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -43,6 +43,12 @@ class IncidentAnalysis(Base):
         nullable=False,
     )
 
+    knowledge_sources: Mapped[list] = mapped_column(
+            JSON,
+            nullable=False,
+            default=list,
+        )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
@@ -51,3 +57,5 @@ class IncidentAnalysis(Base):
     incident: Mapped["Incident"] = relationship(
         back_populates="analysis",
     )
+
+    
