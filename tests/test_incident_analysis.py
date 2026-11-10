@@ -1,6 +1,11 @@
 from unittest.mock import patch
-from app.models.knowledge_document import KnowledgeDocument
+
+from sqlalchemy import select
+
 from app.ai.analyzer import IncidentAnalysis
+from app.models.knowledge_document import KnowledgeDocument
+from app.models.incident_analysis import IncidentAnalysis as IncidentAnalysisModel
+from app.schemas.incident import KnowledgeSource
 from app.services.knowledge_service import KnowledgeSearchResult
 
 # Test the analyze_incident endpoint
@@ -78,7 +83,7 @@ def test_analyze_incident(client):
 
 
 # Test the analyze_incident endpoint when the AI service is unavailable
-def test_analyze_incident_ai_service_unavailable(client):
+def test_analyze_incident_ai_service_unavailable(client, db_session):
     with patch(
         "app.services.incident_service.run_ai_analysis",
         side_effect=Exception("429: You have no credits remaining"),
@@ -139,10 +144,17 @@ def test_analyze_incident_ai_service_unavailable(client):
     "Please contact your system administrator if the issue persists."
 )
 
+    saved_analysis = db_session.scalar(
+        select(IncidentAnalysisModel).where(
+            IncidentAnalysisModel.incident_id == incident_id
+        )
+    )
+    assert saved_analysis is None
+
 
 
 # Test that the knowledge context is passed to the AI analysis function
-def test_analyze_incident_passes_knowledge_to_ai(client):
+def test_analyze_incident_passes_knowledge_to_ai(client, db_session):
     mock_analysis = IncidentAnalysis(
         summary="Payment service is returning HTTP 500 errors.",
         probable_cause="Database connectivity may be contributing to the failure.",
@@ -228,10 +240,25 @@ def test_analyze_incident_passes_knowledge_to_ai(client):
         # Similarity = 1 - cosine distance = 1 - 0.15 = 0.85.
         assert abs(source["similarity"] - 0.85) < 1e-9
 
+        saved_analysis = db_session.scalar(
+            select(IncidentAnalysisModel).where(
+                IncidentAnalysisModel.incident_id == incident_id
+            )
+        )
+        assert saved_analysis is not None
+        assert saved_analysis.knowledge_sources == sources
+        validated_sources = [
+            KnowledgeSource.model_validate(item)
+            for item in saved_analysis.knowledge_sources
+        ]
+        assert [
+            item.model_dump(mode="json") for item in validated_sources
+        ] == sources
 
 
 
-def test_analyze_incident_without_knowledge(client):
+
+def test_analyze_incident_without_knowledge(client, db_session):
     mock_analysis = IncidentAnalysis(
         summary="Payment service is returning HTTP 500 errors.",
         probable_cause="The cause requires further investigation.",
@@ -278,4 +305,12 @@ def test_analyze_incident_without_knowledge(client):
 
     data = response.json()
     assert data["knowledge_sources"] == []
+
+    saved_analysis = db_session.scalar(
+        select(IncidentAnalysisModel).where(
+            IncidentAnalysisModel.incident_id == incident_id
+        )
+    )
+    assert saved_analysis is not None
+    assert saved_analysis.knowledge_sources == []
 

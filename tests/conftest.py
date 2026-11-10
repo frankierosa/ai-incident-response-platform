@@ -2,7 +2,7 @@ import os
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from app.main import app
@@ -15,7 +15,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not configured")
 
-# Create a test database URL by appending a test database name to the original DATABASE_URL 
+# Create a test database URL
 TEST_DATABASE_URL = DATABASE_URL.rsplit("/", 1)[0] + "/test_incident_db"
 
 # Create a test engine and sessionmaker for the test database
@@ -34,6 +34,12 @@ TestingSessionLocal = sessionmaker(
 # Create the test database if it doesn't exist
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_database():
+    # Ensure the pgvector extension exists in the test database
+    with test_engine.begin() as connection:
+        connection.execute(
+            text("CREATE EXTENSION IF NOT EXISTS vector")
+        )
+
     Base.metadata.create_all(bind=test_engine)
 
     yield
